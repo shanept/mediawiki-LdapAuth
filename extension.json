@@ -8,8 +8,7 @@
     "requires": {
         "MediaWiki": ">= 1.27.0",
         "platform": {
-            "php": ">= 7.0",
-            "ext-ldap": "*"
+            "php": ">= 7.0"
         }
     },
     "AuthManagerAutoConfig": {

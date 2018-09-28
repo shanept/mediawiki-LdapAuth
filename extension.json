@@ -1,0 +1,102 @@
+{
+    "name": "LdapAuth",
+    "version": "0.0.1",
+    "author": "Shane Thompson <me@shane.pt>",
+    "descriptionmsg": "ldapauth-desc",
+    "license-name": "MIT",
+    "type": "auth",
+    "requires": {
+        "MediaWiki": ">= 1.27.0",
+        "platform": {
+            "php": ">= 7.0"
+        },
+        "extensions": {
+            "ext-ldap": "*"
+        }
+    },
+    "AuthManagerAutoConfig": {
+        "primaryauth": {
+            "class": "Shanept\\LdapAuth\\Auth\\PrimaryAuthenticationProvider"
+        }
+    },
+    "GroupPermissions": {},
+    "GrantPermissions": {},
+    "AvaliableRights": {},
+    "SpecialPages": {
+        "LdapTest": "Shanept\\LdapAuth\\Special\\LdapTest"
+    },
+    "AutoloadNamespaces": {
+        "Shanept\\LdapAuth\\": "includes/"
+    },
+    "Hooks": {
+        "UserLogin": []
+    },
+    "config_prefix": "wgLdap",
+    "config": {
+        "Domains": {
+            "value": false,
+            "description": "Specifies the LDAP domain (CN) to which we are connecting. Domains may be space-delimited, comma-delimited, or an array.",
+            "public": true
+        },
+        "Servers": {
+            "value": false,
+            "description": "Specifies a list of servers to authenticate each domain.",
+            "public": true
+        },
+        "BindDN": {
+            "value": false,
+            "description": "Specifies the distinguished name upon which to perform the bind.",
+            "public": true
+        },
+        "BindPass": {
+            "value": false,
+            "description": "Specifies the password upon which to perform the bind.",
+            "public": true
+        },
+        "BaseDNs": {
+            "value": false,
+            "description": "Specifies the DN within which a search is performed.",
+            "public": true
+        },
+        "SearchTree": {
+            "value": true,
+            "description": "Specifies whether or not to perform a recursive search on the BaseDN.",
+            "public": true
+        },
+        "SearchFilter": {
+            "value": "(&(objectCategory=person)(objectClass=user)(!(UserAccountControl:1.2.840.113556.1.4.803:=2))(|(sAMAccountName={%s}*)(firstName={%s}*)(lastName={%s}*)(displayName={%s}*)))",
+            "description": "The filter to be used when performing a search. By default, searches may be performed against first name, last name or username. Disabled accounts are filtered.",
+            "public": true
+        },
+        "EncryptionType": {
+            "value": false,
+            "description": "The encryption method to use on the connection. Valid values are false, 'ssl', 'tls', 'ldapi'.",
+            "public": true
+        },
+        "UseLocal": {
+            "value": false,
+            "description": "Specifies whether local authentication may be performed against the MediaWiki database.",
+            "public": true
+        },
+        "UseFullDN": {
+            "value": false,
+            "description": "Specifies whether users must use their full domain username when logging in. eg. DOMAIN\\username.",
+            "public": true
+        },
+        "MapGroups": {
+            "value": [],
+            "description": "Maps LDAP groups to equivalent MediaWiki groups.",
+            "public": true
+        },
+        "IsActiveDirectory": {
+            "value": false,
+            "description": "Are we connecting to an Active-Directory LDAP server?",
+            "public": true
+        },
+        "Debug": {
+            "value": false,
+            "public": false
+        }
+    },
+    "manifest_version": 2
+}

@@ -8,9 +8,7 @@
     "requires": {
         "MediaWiki": ">= 1.27.0",
         "platform": {
-            "php": ">= 7.0"
-        },
-        "extensions": {
+            "php": ">= 7.0",
             "ext-ldap": "*"
         }
     },

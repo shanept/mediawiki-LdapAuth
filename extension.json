@@ -6,10 +6,7 @@
     "license-name": "MIT",
     "type": "auth",
     "requires": {
-        "MediaWiki": ">= 1.27.0",
-        "platform": {
-            "php": ">= 7.0"
-        }
+        "MediaWiki": ">= 1.27.0"
     },
     "AuthManagerAutoConfig": {
         "primaryauth": {

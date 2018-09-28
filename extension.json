@@ -10,7 +10,10 @@
     },
     "AuthManagerAutoConfig": {
         "primaryauth": {
-            "class": "Shanept\\LdapAuth\\Auth\\PrimaryAuthenticationProvider"
+            "Shanept\\LdapAuth\\Auth\\PrimaryAuthenticationProvider": {
+                "class": "Shanept\\LdapAuth\\Auth\\PrimaryAuthenticationProvider",
+                "sort": 0
+            }
         }
     },
     "GroupPermissions": {},

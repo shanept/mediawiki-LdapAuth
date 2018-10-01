@@ -28,7 +28,7 @@
     "Hooks": {
         "UserLogin": []
     },
-    "config_prefix": "wgLdap",
+    "config_prefix": "wgLdapAuth",
     "config": {
         "DomainNames": {
             "value": false,

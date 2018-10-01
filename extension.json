@@ -30,7 +30,7 @@
     },
     "config_prefix": "wgLdap",
     "config": {
-        "Domains": {
+        "DomainNames": {
             "value": false,
             "description": "Specifies the LDAP domain (CN) to which we are connecting. Domains may be space-delimited, comma-delimited, or an array.",
             "public": true
@@ -75,9 +75,9 @@
             "description": "Specifies whether local authentication may be performed against the MediaWiki database.",
             "public": true
         },
-        "UseFullDN": {
+        "UseFullDomain": {
             "value": false,
-            "description": "Specifies whether users must use their full domain username when logging in. eg. DOMAIN\\username.",
+            "description": "Specifies whether users must select their domain when logging in.",
             "public": true
         },
         "MapGroups": {
@@ -89,10 +89,6 @@
             "value": false,
             "description": "Are we connecting to an Active-Directory LDAP server?",
             "public": true
-        },
-        "Debug": {
-            "value": false,
-            "public": false
         }
     },
     "manifest_version": 2

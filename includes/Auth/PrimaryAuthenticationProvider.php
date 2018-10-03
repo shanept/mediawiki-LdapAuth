@@ -163,7 +163,7 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
     public function providerAllowsAuthenticationDataChange(
         AuthenticationRequest $req, $checkData = true
     ) {
-        return StatusValue::newGood('ignored');
+        return StatusValue::newFatal('Authentication Data Change not supported.');
     }
 
     /**
@@ -211,7 +211,7 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
      */
     public function testForAccountCreation($user, $creator, array $reqs)
     {
-        return StatusValue::newBad();
+        return StatusValue::newFatal('Account Creation not supported.');
     }
 
     /**

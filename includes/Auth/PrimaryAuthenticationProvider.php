@@ -328,8 +328,8 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
             return $ldap;
         } catch (SymException $e) {
             // Generate log then try next connection
-            $message = 'wrongpassword';
-            $message = new Message($message, $msg_bind_params);
+            $msgkey = 'wrongpassword';
+            $message = new Message($msgkey, $msg_bind_params);
 
             // If we are permitting local authentication, we can continue on to
             // try it - therefore this is not a *hard* error.
@@ -339,6 +339,8 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
 
             call_user_func($fn, $message->text());
             $this->logger->debug($e->getMessage());
+
+            throw new LdapConnectionException($message, $msgkey);
         }
     }
 

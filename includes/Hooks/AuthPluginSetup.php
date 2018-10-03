@@ -30,7 +30,8 @@ class AuthPluginSetup
      */
     protected $options;
 
-    public static function go(AuthManagerAuthPlugin $wgAuth) {
+    public static function go(AuthManagerAuthPlugin $wgAuth)
+    {
         $inst = new self;
 
         $inst->config = MediaWikiServices::getInstance()
@@ -41,7 +42,8 @@ class AuthPluginSetup
         $inst->normalize_config();
     }
 
-    protected function init_options() {
+    protected function init_options()
+    {
         if (isset($this->options))
             return;
 
@@ -61,13 +63,15 @@ class AuthPluginSetup
         }
     }
 
-    protected function normalize_config() {
+    protected function normalize_config()
+    {
         foreach ($this->options as $option=>$value) {
             $this->normalize_setting($option);
         }
     }
 
-    protected function normalize_setting($setting) {
+    protected function normalize_setting($setting)
+    {
         $fn_name = 'normalize_setting_' . strtolower($setting);
 
         if (method_exists($this, $fn_name)) {
@@ -77,11 +81,13 @@ class AuthPluginSetup
         }
     }
 
-    protected function normalize_setting_uselocal($setting) {
+    protected function normalize_setting_uselocal($setting)
+    {
         // Intentionally left empty
     }
 
-    protected function normalize_setting_domainnames($setting) {
+    protected function normalize_setting_domainnames($setting)
+    {
         $value = &$GLOBALS["wg{$this->prefix}{$setting}"];
 
         if (!is_array($value)) {
@@ -89,7 +95,8 @@ class AuthPluginSetup
         }
     }
 
-    protected function normalize_setting_servers($setting) {
+    protected function normalize_setting_servers($setting)
+    {
         $this->normalize_setting_general($setting);
 
         $values = &$GLOBALS["wg{$this->prefix}{$setting}"];
@@ -99,7 +106,8 @@ class AuthPluginSetup
         }, $values);
     }
 
-    protected function normalize_setting_mapgroups($setting) {
+    protected function normalize_setting_mapgroups($setting)
+    {
         $value = &$GLOBALS["wg{$this->prefix}{$setting}"];
         $keys = array_keys($value);
         $domains = $this->config->get("{$this->prefix}DomainNames");
@@ -113,7 +121,8 @@ class AuthPluginSetup
         }
     }
 
-    protected function normalize_setting_encryptiontype($setting) {
+    protected function normalize_setting_encryptiontype($setting)
+    {
         $this->normalize_setting_general($setting);
 
         $valid_values = ['none', 'ssl', 'tls'];
@@ -131,7 +140,8 @@ class AuthPluginSetup
         }
     }
 
-    protected function normalize_setting_general($setting) {
+    protected function normalize_setting_general($setting)
+    {
         $value = &$GLOBALS["wg{$this->prefix}{$setting}"];
         $default = $this->options[$setting];
         $value = $this->populate_domain_values($value, $default);

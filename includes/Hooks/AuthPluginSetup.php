@@ -86,6 +86,11 @@ class AuthPluginSetup
         // Intentionally left empty
     }
 
+    protected function normalize_setting_requiredomain($setting)
+    {
+        // Intentionally left empty
+    }
+
     protected function normalize_setting_domainnames($setting)
     {
         $value = &$GLOBALS["wg{$this->prefix}{$setting}"];

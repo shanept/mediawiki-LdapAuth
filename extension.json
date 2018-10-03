@@ -83,6 +83,11 @@
             "description": "Specifies whether local authentication may be performed against the MediaWiki database.",
             "public": true
         },
+        "RequireDomain": {
+            "value": false,
+            "description": "Requires the user select a domain, even if there is only one to select from.",
+            "public": true
+        },
         "MapGroups": {
             "value": [],
             "description": "Maps LDAP groups to equivalent MediaWiki groups.",
@@ -91,7 +96,7 @@
         "IsActiveDirectory": {
             "value": false,
             "description": "Are we connecting to an Active-Directory LDAP server?",
-            "public": true
+            "public": false
         }
     },
     "manifest_version": 2

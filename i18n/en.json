@@ -1,0 +1,21 @@
+{
+    "@metadata": {
+        "authors": [
+            "Shane Thompson"
+        ],
+        "message-documentation": "qqq"
+    },
+    "ldapauth-authenticate-user": "Attempting to authenticate user \"$1\" via LDAP.",
+    "ldapauth-no-base": "No LDAP search base has been specified on domain \"$1\".",
+    "ldapauth-attempt-bind": "Attempting to bind to LDAP resource \"$2://$1\".",
+    "ldapauth-attempt-bind-dn": "Attempting to bind to LDAP resource \"$2://$1\" with DN \"$3\".",
+    "ldapauth-attempt-bind-search": "Attempting to anonymously bind to LDAP for search.",
+    "ldapauth-attempt-bind-dn-search": "Attempting to bind to LDAP for search with DN \"$1\".",
+    "ldapauth-no-bind": "Couldn't bind to LDAP resource \"$2://$2\".",
+    "ldapauth-no-bind-dn": "Couldn't bind to LDAP resource \"$2://$1\" with DN \"$3\".",
+    "ldapauth-no-bind-search": "Couldn't bind anonymously to LDAP for search.",
+    "ldapauth-no-bind-dn-search": "Couldn't bind to LDAP for search with DN \"$1\".",
+    "ldapauth-no-connect": "Could not successfully connect to an LDAP server.",
+    "ldapauth-bind-success": "Bound successfully.",
+    "ldapauth-error-unknown": "An unknown error occured."
+}

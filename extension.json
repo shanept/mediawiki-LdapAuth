@@ -8,6 +8,9 @@
     "requires": {
         "MediaWiki": ">= 1.27.0"
     },
+    "ConfigRegistry": {
+        "LdapAuth": "GlobalVarConfig::newInstance"
+    },
     "AuthManagerAutoConfig": {
         "primaryauth": {
             "Shanept\\LdapAuth\\Auth\\PrimaryAuthenticationProvider": {
@@ -19,6 +22,11 @@
     "GroupPermissions": {},
     "GrantPermissions": {},
     "AvaliableRights": {},
+    "MessagesDirs": {
+        "LdapAuth": [
+            "i18n"
+        ]
+    },
     "SpecialPages": {
         "LdapTest": "Shanept\\LdapAuth\\Special\\LdapTest"
     },
@@ -26,7 +34,7 @@
         "Shanept\\LdapAuth\\": "includes/"
     },
     "Hooks": {
-        "UserLogin": []
+        "AuthPluginSetup": "Shanept\\LdapAuth\\Hooks\\AuthPluginSetup::go"
     },
     "config_prefix": "wgLdapAuth",
     "config": {
@@ -50,7 +58,7 @@
             "description": "Specifies the password upon which to perform the bind.",
             "public": true
         },
-        "BaseDNs": {
+        "BaseDN": {
             "value": false,
             "description": "Specifies the DN within which a search is performed.",
             "public": true
@@ -61,23 +69,18 @@
             "public": true
         },
         "SearchFilter": {
-            "value": "(&(objectCategory=person)(objectClass=user)(!(UserAccountControl:1.2.840.113556.1.4.803:=2))(|(sAMAccountName={%s}*)(firstName={%s}*)(lastName={%s}*)(displayName={%s}*)))",
+            "value": "(&(objectCategory=person)(objectClass=user)(!(UserAccountControl:1.2.840.113556.1.4.803:=2))(|(sAMAccountName=%1$s*)(firstName=%1$s*)(lastName=%1$s*)(displayName=%1$s*)))",
             "description": "The filter to be used when performing a search. By default, searches may be performed against first name, last name or username. Disabled accounts are filtered.",
             "public": true
         },
         "EncryptionType": {
             "value": false,
-            "description": "The encryption method to use on the connection. Valid values are false, 'ssl', 'tls', 'ldapi'.",
+            "description": "The encryption method to use on the connection. Valid values are false, 'ssl', 'tls'.",
             "public": true
         },
         "UseLocal": {
             "value": false,
             "description": "Specifies whether local authentication may be performed against the MediaWiki database.",
-            "public": true
-        },
-        "UseFullDomain": {
-            "value": false,
-            "description": "Specifies whether users must select their domain when logging in.",
             "public": true
         },
         "MapGroups": {

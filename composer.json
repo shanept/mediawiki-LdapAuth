@@ -1,0 +1,15 @@
+{
+    "name": "shanept/ldap-auth",
+    "description": "New LdapAuthentication provider plugin for mediawiki",
+    "type": "project",
+    "require": {
+        "symfony/ldap": "^4.1"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Shane Thompson",
+            "email": "me@shane.pt"
+        }
+    ]
+}

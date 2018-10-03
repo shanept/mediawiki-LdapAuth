@@ -62,19 +62,30 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
         $params = [];
 
         try {
+            // We attempt to connect to an LDAP server for the domain
+            // specified by the request. This will bind to the BindDN
             $ldap = $this->connect($req);
+
+            // We must authenticate the specified user against LDAP.
             $this->authenticate($ldap, $req);
+
+            // And now we ensure they are in the search base.
             $search = $this->search($ldap, $req)->toArray();
 
-            // We have results!
-            if (count($search)) {
-                $username = $search[0]->getAttribute('sAMAccountName')[0];
-                return AuthenticationResponse::newPass($username);
+            // If we don't have results, we will just use an exception to
+            // jump to the end of the function.
+            if (!count($search)) {
+                // The user was outside the SearchBase - equivalent to a
+                // forbidden login - however the user has already been
+                // authenticated with their password, so we must not
+                // error with an 'Incorrect Credentials' message.
+                throw new LdapConnectionException('', 'password-login-forbidden');
             }
 
-            // We don't have results. This is probably the most accurate
-            // error message we can use.
-            $message = 'wrongpassword';
+            // Test & assign groups
+
+            $username = $search[0]->getAttribute('sAMAccountName')[0];
+            return AuthenticationResponse::newPass($username);
         } catch (i18nException $e) {
             $message = $e->getTranslationKey();
             $params = $e->getTranslationParams();

@@ -10,22 +10,31 @@ class LdapAuthenticationRequest extends PasswordDomainAuthenticationRequest
 {
     public function getFieldInfo()
     {
-        if ($this->action !== AuthManager::ACTION_LOGIN)
-            exit(sprintf('%s: Invalid action %s', self::class, $this->action));
-
         $config = MediaWikiServices::getInstance()
                                    ->getConfigFactory()
                                    ->makeConfig('LdapAuth');
+
         $domains = $config->get('LdapAuthDomainNames');
         $required = $config->get('LdapAuthRequireDomain');
 
         $ret = parent::getFieldInfo();
 
-        if (count($domains) == 1 && !$required && isset($ret['username'])) {
-            $ret['domain'] = [
-                'type' => 'hidden',
-                'value' => $domains[0],
-            ];
+        switch ($this->action) {
+            case AuthManager::ACTION_REMOVE:
+                return [];
+
+            case AuthManager::ACTION_LINK:
+            case AuthManager::ACTION_CREATE:
+            case AuthManager::ACTION_LOGIN:
+                if (count($domains) == 1 && !$required && isset($ret['username'])) {
+                    $ret['domain'] = [
+                        'type' => 'hidden',
+                        'value' => $domains[0],
+                    ];
+                }
+
+                break;
+
         }
 
         return $ret;

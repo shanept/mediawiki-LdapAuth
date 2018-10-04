@@ -5,6 +5,7 @@
         ],
         "message-documentation": "qqq"
     },
+    "ldapauth-service-name": "LDAP: $1",
     "ldapauth-authenticate-user": "Attempting to authenticate user \"$1\" via LDAP.",
     "ldapauth-no-base": "No LDAP search base has been specified on domain \"$1\".",
     "ldapauth-attempt-bind": "Attempting to bind to LDAP resource \"$2://$1\".",

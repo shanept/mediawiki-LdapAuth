@@ -6,7 +6,8 @@
     "license-name": "MIT",
     "type": "auth",
     "requires": {
-        "MediaWiki": ">= 1.27.0"
+        "MediaWiki": ">= 1.27.0",
+        "LdapGroups": "*"
     },
     "ConfigRegistry": {
         "LdapAuth": "GlobalVarConfig::newInstance"
@@ -34,7 +35,8 @@
         "Shanept\\LdapAuth\\": "includes/"
     },
     "Hooks": {
-        "AuthPluginSetup": "Shanept\\LdapAuth\\Hooks\\Config::go"
+        "AuthPluginSetup": "Shanept\\LdapAuth\\Hooks\\Config::go",
+        "LoadExtensionSchemaUpdates": "Shanept\\LdapAuth\\Hooks\\LoadExtensionSchemaUpdates::go"
     },
     "config_prefix": "wgLdapAuth",
     "config": {

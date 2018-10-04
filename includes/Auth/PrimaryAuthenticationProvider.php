@@ -2,13 +2,16 @@
 
 namespace Shanept\LdapAuth\Auth;
 
+use stdClass;
 use Shanept\LdapAuth\Exceptions\i18nException;
 use Shanept\LdapAuth\Exceptions\ConnectionException as LdapConnectionException;
 use Symfony\Component\Ldap\Ldap;
 use Symfony\Component\Ldap\Adapter\QueryInterface;
 use Symfony\Component\Ldap\Exception\ExceptionInterface as SymException;
 
+use User;
 use Message;
+use RawMessage;
 use StatusValue;
 use MediaWiki\Auth\AuthManager;
 use MediaWiki\Auth\AuthenticationRequest;
@@ -18,6 +21,20 @@ use MediaWiki\Logger\LoggerFactory;
 
 class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvider
 {
+    /**
+     * The IP of the connected LDAP server
+     *
+     * @var string
+     **/
+    protected $server;
+
+    /**
+     * The encryption method used to connect to the LDAP server
+     *
+     * @var string
+     **/
+    protected $encryption;
+
     /**
      * @inheritDoc
      *
@@ -82,23 +99,59 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
                 throw new LdapConnectionException('', 'password-login-forbidden');
             }
 
-            // Test & assign groups
+            // Make things shorter...
+            $s = $search[0];
+            $setSession = [$this->manager, 'setAuthenticationSessionData'];
 
-            $username = $search[0]->getAttribute('sAMAccountName')[0];
-            return AuthenticationResponse::newPass($username);
+            $setSession('LdapAuthUsername', $s->getAttribute('sAMAccountName')[0]);
+            $setSession('LdapAuthDisplayName', $s->getAttribute('displayName')[0]);
+            $setSession('LdapAuthFirstName', $s->getAttribute('givenName')[0]);
+            $setSession('LdapAuthLastName', $s->getAttribute('sn')[0]);
+            $setSession('LdapAuthEmail', $s->getAttribute('mail')[0]);
+            $setSession('LdapAuthDomain', $req->domain);
+
+            // Map groups
+
+            return AuthenticationResponse::newPass($s->getAttribute('sAMAccountName')[0]);
         } catch (i18nException $e) {
             $message = $e->getTranslationKey();
             $params = $e->getTranslationParams();
         } catch (SymException $e) {
-            $message = $e->getMessage();
+            $message = new RawMessage('$1', $e->getMessage());
+        }
+
+        if (!is_a($message, Message::class)) {
+            $message = new Message($message, $params);
         }
 
         // We should have passed by now...
         if ($this->config->get('LdapAuthUseLocal')) {
             return AuthenticationResponse::newAbstain();
         } else {
-            return AuthenticationResponse::newFail(new Message($message, $params));
+            return AuthenticationResponse::newFail($message);
         }
+    }
+
+    /**
+     * Post-login callback
+     *
+     * This will be called at the end of any login attempt, regardless of whether this provider was
+     * the one that handled it. It will not be called for unfinished login attempts that fail by
+     * the session timing out.
+     *
+     * @param User|null $user User that was attempted to be logged in, if known.
+     *   This may become a "UserValue" in the future, or User may be refactored
+     *   into such.
+     * @param AuthenticationResponse $response Authentication response that will be returned
+     *   (PASS or FAIL)
+     */
+    public function postAuthentication($user, AuthenticationResponse $response)
+    {
+        $user->setRealName($this->manager->getAuthenticationSessionData('LdapAuthDisplayName'));
+        $user->setEmail($this->manager->getAuthenticationSessionData('LdapAuthEmail'));
+        // Every time the email is set, it is invalidated. Don't invalidate it.
+        $user->confirmEmail();
+        $user->saveSettings();
     }
 
     /**
@@ -112,22 +165,7 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
      */
     public function testUserExists($username, $flags = User::READ_NORMAL)
     {
-        throw new \BadMethodCallException('Not yet implemented');
-    }
-
-    /**
-     * Test whether the named user can authenticate with this provider
-     *
-     * Should return true if the provider has any data for this user which can be used to
-     * authenticate it, even if the user is temporarily prevented from authentication somehow.
-     *
-     * @param string $username MediaWiki username
-     * @return bool
-     */
-    public function testUserCanAuthenticate($username)
-    {
-        if (!$this->testUserExists($username)) return false;
-        // Test user exists and isn't disabled
+        return false;
     }
 
     /**
@@ -194,7 +232,24 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
      */
     public function providerChangeAuthenticationData(AuthenticationRequest $req)
     {
-        throw new \BadMethodCallException('Not yet implemented');
+        if (!is_a($req, LdapAuthenticationRequest::class))
+            return;
+
+        if ($req->action !== AuthManager::ACTION_REMOVE)
+            throw new \BadMethodCallException('Authentication Data Change not supported.');
+
+        $db = wfGetDB(DB_MASTER);
+        # $this->loadBalancer->getConnection(DB_MASTER);
+
+        $user = User::newFromName($req->username);
+
+        return (bool)$db->delete(
+            'user_ldapauth_user',
+            [
+                'user_id' => $user->getId()
+            ],
+            __METHOD__
+        );
     }
 
     /**
@@ -203,26 +258,7 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
      */
     public function accountCreationType()
     {
-        return self::TYPE_NONE; // self::TYPE_LINK;
-    }
-
-    /**
-     * Determine whether an account creation may begin
-     *
-     * Called from AuthManager::beginAccountCreation()
-     *
-     * @note No need to test if the account exists, AuthManager checks that
-     * @param User $user User being created (not added to the database yet).
-     *   This may become a "UserValue" in the future, or User may be refactored
-     *   into such.
-     * @param User $creator User doing the creation. This may become a
-     *   "UserValue" in the future, or User may be refactored into such.
-     * @param AuthenticationRequest[] $reqs
-     * @return StatusValue
-     */
-    public function testForAccountCreation($user, $creator, array $reqs)
-    {
-        return StatusValue::newFatal('Account Creation not supported.');
+        return self::TYPE_CREATE;
     }
 
     /**
@@ -244,7 +280,76 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
      */
     public function beginPrimaryAccountCreation($user, $creator, array $reqs)
     {
+        throw new Exception('wtf');
         return AuthenticationResponse::newFail();
+    }
+
+    /**
+     * Determine whether an account may be created
+     *
+     * @param User $user User being created (not added to the database yet).
+     *   This may become a "UserValue" in the future, or User may be refactored
+     *   into such.
+     * @param bool|string $autocreate False if this is not an auto-creation, or
+     *  the source of the auto-creation passed to AuthManager::autoCreateUser().
+     * @param array $options
+     *  - flags: (int) Bitfield of User:READ_* constants, default User::READ_NORMAL
+     *  - creating: (bool) If false (or missing), this call is only testing if
+     *    a user could be created. If set, this (non-autocreation) is for
+     *    actually creating an account and will be followed by a call to
+     *    testForAccountCreation(). In this case, the provider might return
+     *    StatusValue::newGood() here and let the later call to
+     *    testForAccountCreation() do a more thorough test.
+     * @return StatusValue
+     */
+    public function testUserForCreation($user, $autocreate, array $options = [])
+    {
+        if (!$autocreate) {
+            return StatusValue::newFatal('Account can not be created.');
+        }
+
+        $domains = $this->config->get('LdapAuthDomainNames');
+        $req = new LdapAuthenticationRequest($domains);
+        $req->username = $user->mName;
+
+        foreach ($domains as $domain) {
+            $req->domain = $domain;
+
+            $ldap = $this->connect($req);
+            $results = $this->search($ldap, $req)->toArray();
+
+            if (count($results) > 0) {
+                return StatusValue::newGood();
+            }
+        }
+
+        return StatusValue::newFatal('Account can not be created.');
+    }
+
+    /**
+     * Post-auto-creation callback
+     * @param User $user User being created (has been added to the database now).
+     *   This may become a "UserValue" in the future, or User may be refactored
+     *   into such.
+     * @param string $source The source of the auto-creation passed to
+     *  AuthManager::autoCreateUser().
+     */
+    public function autoCreatedAccount($user, $source)
+    {
+        $domain = $this->manager->getAuthenticationSessionData('LdapAuthDomain');
+        $user->setOption('domain', $domain);
+        $user->confirmEmail();
+        $user->saveSettings();
+
+        $db = wfGetDB(DB_MASTER);
+
+        $db->insert(
+            'user_ldapauth_user',
+            [
+                'user_id' => $user->getId(),
+                'user_domain' => $domain
+            ]
+        );
     }
 
     private function connect(LdapAuthenticationRequest $req)
@@ -279,6 +384,9 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
             // Attempt bind - on failure, throw an exception
             try {
                 call_user_func_array([$ldap, 'bind'], $bind_with);
+
+                $this->server = $server;
+                $this->encryption = $encryption;
 
                 // log successful bind
                 $msgkey = 'ldapauth-bind-success';
@@ -327,8 +435,8 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
         // We will go through and try every server until one succeeds
         $username = "{$req->username}@{$req->domain}";
         $msg_bind_params = [
-            'server' => $server,
-            'enc' => ($encryption === 'none') ? 'ldap' : $encryption,
+            'server' => $this->server,
+            'enc' => ($this->encryption === 'none') ? 'ldap' : $this->encryption,
             'username' => $username
         ];
 
@@ -380,6 +488,7 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
                 'givenName',    // first name
                 'sn',           // last name
                 'displayName',
+                'mail',         // email address
             ],
         ];
 

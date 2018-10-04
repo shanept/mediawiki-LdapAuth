@@ -7,7 +7,7 @@ use Shanept\LdapAuth\Exceptions\ConfigException;
 use MediaWiki\MediaWikiServices;
 use MediaWiki\Auth\AuthManagerAuthPlugin;
 
-class AuthPluginSetup
+class Config
 {
     /**
      * The active configuration register

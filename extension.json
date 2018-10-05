@@ -10,7 +10,7 @@
         "LdapGroups": "*"
     },
     "ConfigRegistry": {
-        "LdapAuth": "GlobalVarConfig::newInstance"
+        "LdapAuth": "Shanept\\LdapAuth\\Hooks\\Config::makeConfig"
     },
     "AuthManagerAutoConfig": {
         "primaryauth": {

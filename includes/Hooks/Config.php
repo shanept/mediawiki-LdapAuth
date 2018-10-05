@@ -4,6 +4,7 @@ namespace Shanept\LdapAuth\Hooks;
 
 use Shanept\LdapAuth\Exceptions\ConfigException;
 
+use GlobalVarConfig;
 use MediaWiki\MediaWikiServices;
 use MediaWiki\Auth\AuthManagerAuthPlugin;
 
@@ -30,6 +31,14 @@ class Config
      */
     protected $options;
 
+    public static function makeConfig()
+    {
+        $inst = new self;
+        $inst->init_options();
+
+        return new GlobalVarConfig($inst->prefix);
+    }
+
     public static function go(AuthManagerAuthPlugin $wgAuth)
     {
         $inst = new self;
@@ -55,7 +64,6 @@ class Config
         $this->extension = json_decode($contents, true);
 
         $this->prefix = $this->extension['config_prefix'] ?: 'wgLdapAuth';
-        $this->prefix = str_replace('wg', '', $this->prefix);
 
         $this->options = [];
         foreach ($this->extension['config'] as $option=>$value) {
@@ -93,7 +101,7 @@ class Config
 
     protected function normalize_setting_domainnames($setting)
     {
-        $value = &$GLOBALS["wg{$this->prefix}{$setting}"];
+        $value = &$GLOBALS["{$this->prefix}{$setting}"];
 
         if (!is_array($value)) {
             $value = preg_split('/[\s,]+/', $value);
@@ -104,7 +112,7 @@ class Config
     {
         $this->normalize_setting_general($setting);
 
-        $values = &$GLOBALS["wg{$this->prefix}{$setting}"];
+        $values = &$GLOBALS["{$this->prefix}{$setting}"];
 
         $values = array_map(function($value) {
             return preg_split('/[\s,]+/', $value);
@@ -113,9 +121,9 @@ class Config
 
     protected function normalize_setting_mapgroups($setting)
     {
-        $value = &$GLOBALS["wg{$this->prefix}{$setting}"];
+        $value = &$GLOBALS["{$this->prefix}{$setting}"];
         $keys = array_keys($value);
-        $domains = $this->config->get("{$this->prefix}DomainNames");
+        $domains = $this->config->get("DomainNames");
         $merged = array_merge($keys, $domains);
 
         // If we don't have exactly the same count, the value doesn't
@@ -132,7 +140,7 @@ class Config
 
         $valid_values = ['none', 'ssl', 'tls'];
 
-        $values = &$GLOBALS["wg{$this->prefix}{$setting}"];
+        $values = &$GLOBALS["{$this->prefix}{$setting}"];
         foreach ($values as $index=>$value) {
             if (false === $value) {
                 $values[$index] = 'none';
@@ -147,7 +155,7 @@ class Config
 
     protected function normalize_setting_general($setting)
     {
-        $value = &$GLOBALS["wg{$this->prefix}{$setting}"];
+        $value = &$GLOBALS["{$this->prefix}{$setting}"];
         $default = $this->options[$setting];
         $value = $this->populate_domain_values($value, $default);
     }
@@ -159,7 +167,7 @@ class Config
 
     protected function populate_domain_values($value, $with_default_value): array
     {
-        $domains = $this->config->get("{$this->prefix}DomainNames");
+        $domains = $this->config->get("DomainNames");
 
         // If we are passed a scalar type, this is our default value.
         // Change what we have been given, and set value up as an array.

@@ -2,7 +2,6 @@
 
 namespace Shanept\LdapAuth\Auth;
 
-use stdClass;
 use Shanept\LdapAuth\Exceptions\i18nException;
 use Shanept\LdapAuth\Exceptions\ConnectionException as LdapConnectionException;
 use Symfony\Component\Ldap\Ldap;
@@ -10,14 +9,15 @@ use Symfony\Component\Ldap\Adapter\QueryInterface;
 use Symfony\Component\Ldap\Exception\ExceptionInterface as SymException;
 
 use User;
+use Config;
 use Message;
 use RawMessage;
 use StatusValue;
 use MediaWiki\Auth\AuthManager;
+use MediaWiki\MediaWikiServices;
 use MediaWiki\Auth\AuthenticationRequest;
 use MediaWiki\Auth\AuthenticationResponse;
 use MediaWiki\Auth\AbstractPrimaryAuthenticationProvider;
-use MediaWiki\Logger\LoggerFactory;
 
 class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvider
 {
@@ -38,12 +38,24 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
     /**
      * @inheritDoc
      *
+     * We are not handed the correct config, let us override it.
+     */
+    public function setConfig(Config $config)
+    {
+        $this->config = MediaWikiServices::getInstance()
+                                   ->getConfigFactory()
+                                   ->makeConfig('LdapAuth');
+    }
+
+    /**
+     * @inheritDoc
+     *
      * Of the requests returned by this method, exactly one should have
      * {@link AuthenticationRequest::$required} set to REQUIRED.
      */
     public function getAuthenticationRequests($action, array $options)
     {
-        $domains = $this->config->get('LdapAuthDomainNames');
+        $domains = $this->config->get('DomainNames');
         return [new LdapAuthenticationRequest($domains)];
     }
 
@@ -125,7 +137,7 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
         }
 
         // We should have passed by now...
-        if ($this->config->get('LdapAuthUseLocal')) {
+        if ($this->config->get('UseLocal')) {
             return AuthenticationResponse::newAbstain();
         } else {
             return AuthenticationResponse::newFail($message);
@@ -308,7 +320,7 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
             return StatusValue::newFatal('Account can not be created.');
         }
 
-        $domains = $this->config->get('LdapAuthDomainNames');
+        $domains = $this->config->get('DomainNames');
         $req = new LdapAuthenticationRequest($domains);
         $req->username = $user->mName;
 
@@ -354,10 +366,10 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
 
     private function connect(LdapAuthenticationRequest $req)
     {
-        $dn = $this->config->get('LdapAuthBindDN')[$req->domain];
-        $pass = $this->config->get('LdapAuthBindPass')[$req->domain];
-        $servers = $this->config->get('LdapAuthServers')[$req->domain];
-        $encryption = $this->config->get('LdapAuthEncryptionType')[$req->domain];
+        $dn = $this->config->get('BindDN')[$req->domain];
+        $pass = $this->config->get('BindPass')[$req->domain];
+        $servers = $this->config->get('Servers')[$req->domain];
+        $encryption = $this->config->get('EncryptionType')[$req->domain];
 
         if (false === $dn) {
             $msgkey = 'ldapauth-attempt-bind-search';
@@ -418,7 +430,7 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
 
         // If we are permitting local authentication, we can continue on to
         // try it - therefore this is not a *hard* error.
-        $fn = $this->config->get('LdapAuthUseLocal') ?
+        $fn = $this->config->get('UseLocal') ?
                 [$this->logger, 'warning'] :
                 [$this->logger, 'error'];
 
@@ -429,8 +441,8 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
 
     private function authenticate($ldap, LdapAuthenticationRequest $req)
     {
-        $dn = $this->config->get('LdapAuthBindDN')[$req->domain];
-        $encryption = $this->config->get('LdapAuthEncryptionType')[$req->domain];
+        $dn = $this->config->get('BindDN')[$req->domain];
+        $encryption = $this->config->get('EncryptionType')[$req->domain];
 
         // We will go through and try every server until one succeeds
         $username = "{$req->username}@{$req->domain}";
@@ -452,7 +464,7 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
 
             // If we are permitting local authentication, we can continue on to
             // try it - therefore this is not a *hard* error.
-            $fn = $this->config->get('LdapAuthUseLocal') ?
+            $fn = $this->config->get('UseLocal') ?
                     [$this->logger, 'warning'] :
                     [$this->logger, 'error'];
 
@@ -465,9 +477,9 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
 
     private function search($ldap, LdapAuthenticationRequest $req)
     {
-        $base = $this->config->get('LdapAuthBaseDN')[$req->domain];
-        $filter = $this->config->get('LdapAuthSearchFilter')[$req->domain];
-        $search_tree = $this->config->get('LdapAuthSearchTree')[$req->domain];
+        $base = $this->config->get('BaseDN')[$req->domain];
+        $filter = $this->config->get('SearchFilter')[$req->domain];
+        $search_tree = $this->config->get('SearchTree')[$req->domain];
 
         if (false === $base) {
             // log && throw

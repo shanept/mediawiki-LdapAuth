@@ -14,8 +14,8 @@ class LdapAuthenticationRequest extends PasswordDomainAuthenticationRequest
                                    ->getConfigFactory()
                                    ->makeConfig('LdapAuth');
 
-        $domains = $config->get('LdapAuthDomainNames');
-        $required = $config->get('LdapAuthRequireDomain');
+        $domains = $config->get('DomainNames');
+        $required = $config->get('RequireDomain');
 
         $ret = parent::getFieldInfo();
 

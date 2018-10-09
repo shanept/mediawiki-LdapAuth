@@ -145,6 +145,18 @@ The filter to be used when performing a search. By default, searches may be perf
 ###### DEFAULT: `(&(objectCategory=person)(objectClass=user)(!(UserAccountControl:1.2.840.113556.1.4.803:=2))(|(sAMAccountName=%1$s*)(firstName=%1$s*)(lastName=%1$s*)(displayName=%1$s*)))`
 ###### PER-DOMAIN
 
+Example:
+```php
+// Overwrite search filter for all domains
+$wgLdapAuthSearchFilter = '(&(objectClass=user)(displayName=%1$s))';
+
+// Overwrite search filter for only DOMAIN_1.
+// All other domains will inherit the default value.
+$wgLdapAuthSearchFilter = [
+    'DOMAIN_1' => '(&(objectClass=user)(displayName=%1$s))',
+];
+```
+
 ### wgLdapAuthEncryptionType
 The encryption method to use on the connection. Valid values are false, 'ssl', 'tls'.
 

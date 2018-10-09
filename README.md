@@ -163,6 +163,20 @@ The encryption method to use on the connection. Valid values are false, 'ssl', '
 ###### DEFAULT: `false`
 ###### PER-DOMAIN
 
+Example:
+```php
+// Set all domains to use TLS encryption
+$wgLdapAuthEncryptionType = 'tls';
+
+// Specify that DOMAIN_1 will use TLS, DOMAIN_2 will use SSL
+// and DOMAIN_3 will not use encryption.
+$wgLdapAuthEncryptionType = [
+    'DOMAIN_1' => 'tls',
+    'DOMAIN_2' => 'ssl',
+    'DOMAIN_3' => false,
+];
+```
+
 ### wgLdapAuthUseLocal
 Specifies whether local authentication may be performed against the MediaWiki database.
 

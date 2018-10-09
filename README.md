@@ -215,6 +215,46 @@ Maps LDAP groups to equivalent MediaWiki groups.
 ###### DEFAULT: `array()`
 ###### PER-DOMAIN
 
+Example:
+```php
+// The following array will be domain-nonspecific
+$wgLdapAuthMapGroups = [
+    'bureaucrat' => [
+        'CN=Administrator,CN=Users,DC=DOMAIN_1'
+    ],
+    'sysop' => [
+        'CN=Administrator,CN=Users,DC=DOMAIN_1',
+        'CN=Power Users,CN=Users,DC=DOMAIN_1',
+    ],
+];
+
+// The following is more useful - this will be domain-specific
+$wgLdapAuthMapGroups = [
+    'DOMAIN_1' => [
+        'bureaucrat' => [
+            'CN=Administrator,CN=Users,DC=DOMAIN_1'
+        ],
+        'sysop' => [
+            'CN=Administrators,CN=Users,DC=DOMAIN_1',
+            'CN=Power Users,CN=Users,DC=DOMAIN_1',
+        ],
+    ],
+    'DOMAIN_2' => [
+        'bureaucrat' => [
+            'CN=Administrators,CN=Users,DC=DOMAIN_2'
+        ],
+        'sysop' => [
+            'CN=Administrators,CN=Users,DC=DOMAIN_2',
+        ],
+    ],
+    'DOMAIN_3' => [
+        'bureaucrat' => [
+            'CN=Administrators,CN=Users,DC=DOMAIN_3'
+        ]
+    ],
+];
+```
+
 ### wgLdapAuthCacheGroupMap
 Specifies the period of time for which LDAP grouping should be synced for a user.
 

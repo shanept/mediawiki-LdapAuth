@@ -126,6 +126,19 @@ Specifies whether or not to perform a recursive search on the BaseDN.
 ###### DEFAULT: `true`
 ###### PER-DOMAIN
 
+Examples:
+```php
+// We will not allow recursive tree searches on any domain
+$wgLdapAuthSearchTree = false;
+
+// We will allow recursive searching for only DOMAIN_1
+$wgLdapAuthSearchTree = [
+    'DOMAIN_1' => true,
+    'DOMAIN_2' => false,
+    'DOMAIN_3' => false,
+];
+```
+
 ### wgLdapAuthSearchFilter
 The filter to be used when performing a search. By default, searches may be performed against first name, last name or username. Disabled accounts are filtered. `%1$s` is used as a placeholder for the username for which we are searching.
 

@@ -126,12 +126,14 @@ class Config
         $domains = $this->config->get("DomainNames");
         $merged = array_merge($keys, $domains);
 
-        // If we don't have exactly the same count, the value doesn't
-        // contain every single domain. We must populate.
-        if (count($merged) != count($keys)) {
-            $default = $this->retrieve_default_config_value($setting);
-            $value = $this->populate_domain_values($value, $default);
-        }
+        // If we have exactly the same count, the value must
+        // contain every single domain. We won't populate.
+        if (count($merged) == count($keys))
+            return;
+
+        $default = $GLOBALS["{$this->prefix}{$setting}"];
+        $value = $this->populate_domain_values($value, $default);
+        $value = array_diff_assoc($value, $default);
     }
 
     protected function normalize_setting_encryptiontype($setting)
@@ -156,7 +158,7 @@ class Config
     protected function normalize_setting_general($setting)
     {
         $value = &$GLOBALS["{$this->prefix}{$setting}"];
-        $default = $this->options[$setting];
+        $default = $this->retrieve_default_config_value($setting);
         $value = $this->populate_domain_values($value, $default);
     }
 

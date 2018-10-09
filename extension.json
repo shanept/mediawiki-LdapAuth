@@ -6,8 +6,7 @@
     "license-name": "MIT",
     "type": "auth",
     "requires": {
-        "MediaWiki": ">= 1.27.0",
-        "LdapGroups": "*"
+        "MediaWiki": ">= 1.27.0"
     },
     "ConfigRegistry": {
         "LdapAuth": "Shanept\\LdapAuth\\Hooks\\Config::makeConfig"
@@ -93,6 +92,11 @@
         "MapGroups": {
             "value": [],
             "description": "Maps LDAP groups to equivalent MediaWiki groups.",
+            "public": true
+        },
+        "CacheGroupMap": {
+            "value": 3600,
+            "description": "Specifies the period of time for which LDAP grouping should be synced for a user.",
             "public": true
         },
         "IsActiveDirectory": {

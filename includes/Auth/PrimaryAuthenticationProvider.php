@@ -2,6 +2,7 @@
 
 namespace Shanept\LdapAuth\Auth;
 
+use Shanept\LdapAuth\Groups\LdapGroupSync;
 use Shanept\LdapAuth\Exceptions\i18nException;
 use Shanept\LdapAuth\Exceptions\ConnectionException as LdapConnectionException;
 use Symfony\Component\Ldap\Ldap;
@@ -34,6 +35,13 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
      * @var string
      **/
     protected $encryption;
+
+    /**
+     * The LDAP connection
+     *
+     * @var Ldap
+     */
+    protected $ldap;
 
     /**
      * @inheritDoc
@@ -93,13 +101,13 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
         try {
             // We attempt to connect to an LDAP server for the domain
             // specified by the request. This will bind to the BindDN
-            $ldap = $this->connect($req);
+            $this->ldap = $this->connect($req);
 
             // We must authenticate the specified user against LDAP.
-            $this->authenticate($ldap, $req);
+            $this->authenticate($req);
 
             // And now we ensure they are in the search base.
-            $search = $this->search($ldap, $req)->toArray();
+            $search = $this->search($req)->toArray();
 
             // If we don't have results, we will just use an exception to
             // jump to the end of the function.
@@ -121,8 +129,6 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
             $setSession('LdapAuthLastName', $s->getAttribute('sn')[0]);
             $setSession('LdapAuthEmail', $s->getAttribute('mail')[0]);
             $setSession('LdapAuthDomain', $req->domain);
-
-            // Map groups
 
             return AuthenticationResponse::newPass($s->getAttribute('sAMAccountName')[0]);
         } catch (i18nException $e) {
@@ -164,6 +170,13 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
         // Every time the email is set, it is invalidated. Don't invalidate it.
         $user->confirmEmail();
         $user->saveSettings();
+
+        // Map Groups
+        $sync = new LdapGroupSync($user, $this->ldap);
+        $sync->setLogger($this->logger);
+        $sync->setConfig($this->config);
+
+        $sync->map();
     }
 
     /**
@@ -256,7 +269,7 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
         $user = User::newFromName($req->username);
 
         return (bool)$db->delete(
-            'user_ldapauth_user',
+            'user_ldapauth_domain',
             [
                 'user_id' => $user->getId()
             ],
@@ -356,7 +369,7 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
         $db = wfGetDB(DB_MASTER);
 
         $db->insert(
-            'user_ldapauth_user',
+            'user_ldapauth_domain',
             [
                 'user_id' => $user->getId(),
                 'user_domain' => $domain
@@ -439,7 +452,7 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
         throw new LdapConnectionException($message, $msgkey);
     }
 
-    private function authenticate($ldap, LdapAuthenticationRequest $req)
+    private function authenticate(LdapAuthenticationRequest $req)
     {
         $dn = $this->config->get('BindDN')[$req->domain];
         $encryption = $this->config->get('EncryptionType')[$req->domain];
@@ -454,9 +467,9 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
 
         try {
             $message = new Message("ldapauth-bind-dn", $msg_bind_params);
-            $ldap->bind($username, $req->password);
+            $this->ldap->bind($username, $req->password);
 
-            return $ldap;
+            return $this->ldap;
         } catch (SymException $e) {
             // Generate log then try next connection
             $msgkey = 'wrongpassword';
@@ -475,7 +488,7 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
         }
     }
 
-    private function search($ldap, LdapAuthenticationRequest $req)
+    private function search(LdapAuthenticationRequest $req)
     {
         $base = $this->config->get('BaseDN')[$req->domain];
         $filter = $this->config->get('SearchFilter')[$req->domain];
@@ -506,7 +519,7 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
 
         $filter = sprintf($filter, $req->username);
 
-        $query = $ldap->query($base, $filter, $ldap_query_options);
+        $query = $this->ldap->query($base, $filter, $ldap_query_options);
 
         return $query->execute();
     }

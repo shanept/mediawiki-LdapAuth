@@ -17,6 +17,12 @@
     "ldapauth-no-bind-search": "Couldn't bind anonymously to LDAP for search.",
     "ldapauth-no-bind-dn-search": "Couldn't bind to LDAP for search with DN \"$1\".",
     "ldapauth-no-connect": "Could not successfully connect to an LDAP server.",
+    "ldapauth-nodomain": "No domain specified for user \"$1\".",
     "ldapauth-bind-success": "Bound successfully.",
+    "ldapauth-fetch-data": "Fetching user data for \"$1\" via LDAP.",
+    "ldapauth-no-user-by-email": "There is no user with the email \"$1\".",
+    "ldapauth-delete-from-group": "Removing user \"$1\" from group \"$2\".",
+    "ldapauth-add-to-group": "Adding user \"$1\" to group \"$2\".",
+    "ldapauth-ran-search": "Ran LDAP search for \"$1\" in \"$2\" seconds.",
     "ldapauth-error-unknown": "An unknown error occured."
 }

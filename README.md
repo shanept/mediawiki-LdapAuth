@@ -184,6 +184,15 @@ Note that this does not provide per-domain configuration.
 
 ###### DEFAULT: `false`
 
+Example:
+```php
+// Allow logins to MediaWiki "local" accounts
+$wgLdapAuthUseLocal = true;
+
+// Disallow logins to MediaWiki "local" accounts
+$wgLdapAuthUseLocal = false;
+```
+
 ### wgLdapAuthRequireDomain
 If there is only one domain to select from, the domain field will be hidden for brevity. We can override this behaviour and force the field to always display.
 

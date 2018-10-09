@@ -102,7 +102,7 @@
         "IsActiveDirectory": {
             "value": false,
             "description": "Are we connecting to an Active-Directory LDAP server?",
-            "public": false
+            "public": true
         }
     },
     "manifest_version": 2

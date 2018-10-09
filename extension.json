@@ -1,6 +1,6 @@
 {
     "name": "LdapAuth",
-    "version": "0.0.1",
+    "version": "0.0.5",
     "author": "Shane Thompson <me@shane.pt>",
     "descriptionmsg": "ldapauth-desc",
     "license-name": "MIT",

@@ -145,7 +145,7 @@ The filter to be used when performing a search. By default, searches may be perf
 ###### DEFAULT: `(&(objectCategory=person)(objectClass=user)(!(UserAccountControl:1.2.840.113556.1.4.803:=2))(|(sAMAccountName=%1$s*)(firstName=%1$s*)(lastName=%1$s*)(displayName=%1$s*)))`
 ###### PER-DOMAIN
 
-Example:
+Examples:
 ```php
 // Overwrite search filter for all domains
 $wgLdapAuthSearchFilter = '(&(objectClass=user)(displayName=%1$s))';
@@ -163,7 +163,7 @@ The encryption method to use on the connection. Valid values are false, 'ssl', '
 ###### DEFAULT: `false`
 ###### PER-DOMAIN
 
-Example:
+Examples:
 ```php
 // Set all domains to use TLS encryption
 $wgLdapAuthEncryptionType = 'tls';
@@ -184,7 +184,7 @@ Note that this does not provide per-domain configuration.
 
 ###### DEFAULT: `false`
 
-Example:
+Examples:
 ```php
 // Allow logins to MediaWiki "local" accounts
 $wgLdapAuthUseLocal = true;
@@ -200,7 +200,7 @@ Note that this does not provide per-domain configuration.
 
 ###### DEFAULT: `false`
 
-Example:
+Examples:
 ```php
 // The DOMAIN field will ALWAYS be visible when logging in
 $wgLdapAuthRequireDomain = true;
@@ -215,7 +215,7 @@ Maps LDAP groups to equivalent MediaWiki groups.
 ###### DEFAULT: `array()`
 ###### PER-DOMAIN
 
-Example:
+Examples:
 ```php
 // The following array will be domain-nonspecific
 $wgLdapAuthMapGroups = [
@@ -261,10 +261,30 @@ Specifies the period of time for which LDAP grouping should be synced for a user
 ###### DEFAULT: `3600`
 ###### PER-DOMAIN
 
+Examples:
+```php
+// The LDAP group map shall be cached for 10 seconds
+// before it is updated from the LDAP server
+$wgLdapAuthCacheGroupMap = 10;
+
+// The LDAP group map shall now be cached for an hour
+// before it is updated from the LDAP server
+$wgLdapAuthCacheGroupMap = 60 * 60;
+```
+
 ### wgLdapAuthIsActiveDirectory
 Are we connecting to an Active-Directory LDAP server?
 
 ###### DEFAULT: `false`
 ###### PER-DOMAIN
+
+Examples:
+```php
+// This is an Active Directory server
+$wgLdapAuthIsActiveDirectory = true;
+
+// Otherwise, it isn't Active Directory
+$wgLdapAuthIsActiveDirectory = false;
+```
 
   [1]: https://www.mediawiki.org/wiki/Manual:LocalSettings.php

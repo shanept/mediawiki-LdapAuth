@@ -10,6 +10,19 @@ wfLoadExtension( 'LdapAuth' );
 ```
 3. [Configure](#configuration) as required.
 
+# Quick Configuration
+If you can't be bothered reading about how to configure the extension properly, don't worry - here's a quick and easy config you can probably get going with!
+
+```php
+$wgLdapAuthDomainNames = 'MY_DOMAIN_HERE';
+$wgLdapAuthServers = 'SERVER1,SERVER2,SERVER3';
+$wgLdapAuthBindDN = 'MY_BIND_DN_HERE';
+$wgLdapAuthBindPass = 'PASSWORD_FOR_BIND_DN';
+```
+
+* If you wish to restrict logins to users in a specific OU/DN, see [Base DN Configuration](#wgldapauthbasedn).
+* If you wish to map Active Directory groups to MediaWiki groups, see [Group Mapping](#wgldapauthmapgroups).
+
 # Configuration
 As this plugin contains support for multiple domains, most of the following settings have two forms - generic cross-domain setting, or individualised per-domain settings, annotated by *PER-DOMAIN*.
 

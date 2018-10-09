@@ -34,7 +34,6 @@ Note that this does not provide per-domain configuration, as that simply wouldn'
 ###### REQUIRED
 
 Examples:
-
 ```php
 $wgLdapAuthDomainNames = 'DOMAIN_1 DOMAIN_2  DOMAIN_3';  // space-delimited
 $wgLdapAuthDomainNames = 'DOMAIN_1,DOMAIN_2, DOMAIN_3';  // comma-delimited
@@ -71,6 +70,19 @@ Specifies the user's distinguished name upon which to perform the bind.
 
 ###### DEFAULT: `false`
 ###### PER-DOMAIN
+
+Examples:
+```php
+// DN for single domain usage
+$wgLdapAuthBindDN = 'CN=Wiki,DC=DOMAIN_1';
+
+// DN for multi-domain usage
+$wgLdapAuthBindDN = [
+    'DOMAIN_1' => 'CN=Wiki,DC=DOMAIN_1',
+    'DOMAIN_2' => 'CN=Wiki,DC=DOMAIN_2',
+    'DOMAIN_3' => 'CN=Wiki,DC=DOMAIN_3',
+];
+```
 
 ### wgLdapAuthBindPass
 Specifies the password upon which to perform the bind.

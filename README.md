@@ -90,6 +90,17 @@ Specifies the password upon which to perform the bind.
 ###### DEFAULT: `false`
 ###### PER-DOMAIN
 
+Examples:
+```php
+$wgLdapAuthBindPass = 'MyPasswordHere';
+// or
+$wgLdapAuthBindPass = [
+    'DOMAIN_1' => 'Domain 1 Password',
+    'DOMAIN_2' => 'Domain 2 Password',
+    'DOMAIN_3' => 'Domain 3 Password',
+];
+```
+
 ### wgLdapAuthBaseDN
 Specifies the DN within which a search is performed.
 

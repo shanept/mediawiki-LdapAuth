@@ -200,6 +200,15 @@ Note that this does not provide per-domain configuration.
 
 ###### DEFAULT: `false`
 
+Example:
+```php
+// The DOMAIN field will ALWAYS be visible when logging in
+$wgLdapAuthRequireDomain = true;
+
+// The DOMAIN field will only be visible if required
+$wgLdapAuthRequireDomain = false;
+```
+
 ### wgLdapAuthMapGroups
 Maps LDAP groups to equivalent MediaWiki groups.
 

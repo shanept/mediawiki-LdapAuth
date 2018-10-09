@@ -20,11 +20,38 @@ Note that this does not provide per-domain configuration, as that simply wouldn'
 
 ###### REQUIRED
 
+Examples:
+
+```php
+$wgLdapAuthDomainNames = 'DOMAIN_1 DOMAIN_2  DOMAIN_3';  // space-delimited
+$wgLdapAuthDomainNames = 'DOMAIN_1,DOMAIN_2, DOMAIN_3';  // comma-delimited
+$wgLdapAuthDomainNames = [                               // PHP array format
+    'DOMAIN_1',
+    'DOMAIN_2',
+    'DOMAIN_3',
+];
+```
+
 ### wgLdapAuthServers
 Specifies a list of servers to authenticate each domain.
 
 ###### REQUIRED
 ###### PER-DOMAIN
+
+Examples:
+```php
+// space and comma delimited - the following servers will be
+// used for ALL domains.
+$wgLdapAuthServers = '127.0.0.1 127.0.0.2,127.0.0.3';
+
+// mixed format - the following servers are individual to each
+// domain, as specified by the array key.
+$wgLdapAuthServers = [
+    'DOMAIN_1' => '127.0.0.1 127.0.0.2,127.0.0.3',          // space and comma delimited
+    'DOMAIN_2' => ['127.0.0.1', '127.0.0.2', '127.0.0.3'],  // PHP array format
+    'DOMAIN_3' => '127.0.0.4',
+];
+```
 
 ### wgLdapAuthBindDN
 Specifies the user's distinguished name upon which to perform the bind.

@@ -107,6 +107,19 @@ Specifies the DN within which a search is performed.
 ###### DEFAULT: `false`
 ###### PER-DOMAIN
 
+Examples:
+```php
+// DN for single domain usage
+$wgLdapAuthBaseDN = 'OU=Users,DC=DOMAIN_1';
+
+// DN for multi-domain usage
+$wgLdapAuthBaseDN = [
+    'DOMAIN_1' => 'OU=Users,DC=DOMAIN_1',
+    'DOMAIN_2' => 'OU=Users,DC=DOMAIN_2',
+    'DOMAIN_3' => 'OU=Users,DC=DOMAIN_3',
+];
+```
+
 ### wgLdapAuthSearchTree
 Specifies whether or not to perform a recursive search on the BaseDN.
 

@@ -1,2 +1,7 @@
-/vendor/
-.php_cs.cache
+.*.swp
+*~
+/.project
+composer.lock
+/vendor
+/node_modules
+

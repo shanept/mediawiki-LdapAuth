@@ -25,7 +25,7 @@
         ]
     },
     "AutoloadNamespaces": {
-        "Shanept\\LdapAuth\\": "includes/"
+        "Shanept\\LdapAuth\\": "src/"
     },
     "Hooks": {
         "AuthPluginSetup": "Shanept\\LdapAuth\\Hooks\\Config::go",

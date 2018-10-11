@@ -80,11 +80,13 @@ class LdapGroupSync
 
         // Restrict the ability of users to change these rights
         foreach (array_unique(array_keys($wgGroupPermissions)) as $group) {
-            if (!isset($wgGroupPermissions[$group]['userrights']))
+            if (!isset($wgGroupPermissions[$group]['userrights'])) {
                 continue;
+            }
 
-            if (!$wgGroupPermissions[$group]['userrights'])
+            if (!$wgGroupPermissions[$group]['userrights']) {
                 continue;
+            }
 
             $wgGroupPermissions[$group]['userrights'] = false;
 
@@ -197,7 +199,7 @@ class LdapGroupSync
         $memberOf = array_map('strtolower', $data->getAttribute('memberOf'));
         $memberOf = array_flip($memberOf);
 
-        $this->logger->debug(sprintf('memberOf: "%s"',  implode('", "', $memberOf)));
+        $this->logger->debug(sprintf('memberOf: "%s"', implode('", "', $memberOf)));
         $this->logger->debug(sprintf('In groups: "%s"', implode('", ', $user_groups)));
 
         // List of LDAP groups that map to MediaWiki groups that we already have
@@ -208,7 +210,7 @@ class LdapGroupSync
 
         // LDAP-mapped MediaWiki groups that should be added because they
         //  aren't in the user's list
-        $add = array_keys(array_flip(array_intersect_key( $missing, $memberOf)));
+        $add = array_keys(array_flip(array_intersect_key($missing, $memberOf)));
 
         // MediaWiki groups that should be removed - user doesn't have any LDAP groups
         foreach (array_keys($this->groupMap) as $group) {

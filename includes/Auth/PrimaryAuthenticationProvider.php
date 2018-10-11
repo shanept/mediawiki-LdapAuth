@@ -235,7 +235,8 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
      * @return StatusValue
      */
     public function providerAllowsAuthenticationDataChange(
-        AuthenticationRequest $req, $checkData = true
+        AuthenticationRequest $req,
+        $checkData = true
     ) {
         return StatusValue::newFatal('Authentication Data Change not supported.');
     }
@@ -257,11 +258,13 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
      */
     public function providerChangeAuthenticationData(AuthenticationRequest $req)
     {
-        if (!is_a($req, LdapAuthenticationRequest::class))
+        if (!is_a($req, LdapAuthenticationRequest::class)) {
             return;
+        }
 
-        if ($req->action !== AuthManager::ACTION_REMOVE)
+        if ($req->action !== AuthManager::ACTION_REMOVE) {
             throw new \BadMethodCallException('Authentication Data Change not supported.');
+        }
 
         $db = wfGetDB(DB_MASTER);
         # $this->loadBalancer->getConnection(DB_MASTER);
@@ -398,8 +401,9 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
         $this->logger->info($message->text());
 
         foreach ($servers as $server) {
-            if (false === $server)
+            if (false === $server) {
                 continue;
+            }
 
             $ldap = Ldap::create('ext_ldap', [
                 'host' => $server,

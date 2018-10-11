@@ -53,8 +53,9 @@ class Config
 
     protected function init_options()
     {
-        if (isset($this->options))
+        if (isset($this->options)) {
             return;
+        }
 
         $contents = file_get_contents(__DIR__ . '/../../extension.json');
         if (false === $contents) {
@@ -114,7 +115,7 @@ class Config
 
         $values = &$GLOBALS["{$this->prefix}{$setting}"];
 
-        $values = array_map(function($value) {
+        $values = array_map(function ($value) {
             return preg_split('/[\s,]+/', $value);
         }, $values);
     }
@@ -128,14 +129,15 @@ class Config
 
         // If we have exactly the same count, the value must
         // contain every single domain. We won't populate.
-        if (count($merged) == count($keys))
+        if (count($merged) == count($keys)) {
             return;
+        }
 
         $default = $GLOBALS["{$this->prefix}{$setting}"];
         $value = $this->populate_domain_values($value, $default);
 
         // Remove non-domain values from array
-        $value = array_filter($value, function($key) use($domains) {
+        $value = array_filter($value, function ($key) use ($domains) {
             return in_array($key, $domains);
         }, ARRAY_FILTER_USE_KEY);
     }
@@ -150,7 +152,7 @@ class Config
         foreach ($values as $index=>$value) {
             if (false === $value) {
                 $values[$index] = 'none';
-            } else if (false === in_array($value, $valid_values, true)) {
+            } elseif (false === in_array($value, $valid_values, true)) {
                 throw new ConfigException(sprintf(
                     'Invalid encryption type "%s"',
                     $value
@@ -184,8 +186,9 @@ class Config
 
         // Now we force a default value on all unset domains.
         foreach ($domains as $domain) {
-            if (isset($value[$domain]))
+            if (isset($value[$domain])) {
                 continue;
+            }
 
             $value[$domain] = $with_default_value;
         }

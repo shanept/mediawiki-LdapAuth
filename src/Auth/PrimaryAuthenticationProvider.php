@@ -3,7 +3,7 @@
 namespace Shanept\LdapAuth\Auth;
 
 use Shanept\LdapAuth\Groups\LdapGroupSync;
-use Shanept\LdapAuth\Exceptions\i18nException;
+use Shanept\LdapAuth\Exceptions\I18nException;
 use Shanept\LdapAuth\Exceptions\ConnectionException as LdapConnectionException;
 use Symfony\Component\Ldap\Ldap;
 use Symfony\Component\Ldap\Adapter\QueryInterface;
@@ -138,7 +138,7 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
 			$setSession( 'LdapAuthDomain', $req->domain );
 
 			return AuthenticationResponse::newPass( $s->getAttribute( 'sAMAccountName' )[0] );
-		} catch ( i18nException $e ) {
+		} catch ( I18nException $e ) {
 			$message = $e->getTranslationKey();
 			$params = $e->getTranslationParams();
 		} catch ( SymException $e ) {

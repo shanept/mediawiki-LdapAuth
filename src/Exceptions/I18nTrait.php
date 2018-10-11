@@ -4,7 +4,7 @@ namespace Shanept\LdapAuth\Exceptions;
 
 use Throwable;
 
-trait i18nTrait {
+trait I18nTrait {
 	/**
 	 * The localization message key
 	 *

@@ -2,7 +2,7 @@
 
 namespace Shanept\LdapAuth\Exceptions;
 
-interface i18nException {
+interface I18nException {
 	/**
 	 * Returns the translation key
 	 *

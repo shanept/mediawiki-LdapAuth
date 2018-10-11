@@ -19,16 +19,10 @@
             }
         }
     },
-    "GroupPermissions": {},
-    "GrantPermissions": {},
-    "AvaliableRights": {},
     "MessagesDirs": {
         "LdapAuth": [
             "i18n"
         ]
-    },
-    "SpecialPages": {
-        "LdapTest": "Shanept\\LdapAuth\\Special\\LdapTest"
     },
     "AutoloadNamespaces": {
         "Shanept\\LdapAuth\\": "includes/"

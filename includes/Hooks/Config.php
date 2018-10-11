@@ -133,7 +133,11 @@ class Config
 
         $default = $GLOBALS["{$this->prefix}{$setting}"];
         $value = $this->populate_domain_values($value, $default);
-        $value = array_diff_assoc($value, $default);
+
+        // Remove non-domain values from array
+        $value = array_filter($value, function($key) use($domains) {
+            return in_array($key, $domains);
+        }, ARRAY_FILTER_USE_KEY);
     }
 
     protected function normalize_setting_encryptiontype($setting)

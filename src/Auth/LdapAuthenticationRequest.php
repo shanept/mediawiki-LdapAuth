@@ -6,37 +6,36 @@ use MediaWiki\Auth\AuthManager;
 use MediaWiki\MediaWikiServices;
 use MediaWiki\Auth\PasswordDomainAuthenticationRequest;
 
-class LdapAuthenticationRequest extends PasswordDomainAuthenticationRequest
-{
-    public function getFieldInfo()
-    {
-        $config = MediaWikiServices::getInstance()
-                                   ->getConfigFactory()
-                                   ->makeConfig('LdapAuth');
+class LdapAuthenticationRequest extends PasswordDomainAuthenticationRequest {
+	/**
+	 * @inheritDoc
+	 */
+	public function getFieldInfo() {
+		$config = MediaWikiServices::getInstance()
+				->getConfigFactory()->makeConfig( 'LdapAuth' );
 
-        $domains = $config->get('DomainNames');
-        $required = $config->get('RequireDomain');
+		$domains = $config->get( 'DomainNames' );
+		$required = $config->get( 'RequireDomain' );
 
-        $ret = parent::getFieldInfo();
+		$ret = parent::getFieldInfo();
 
-        switch ($this->action) {
-            case AuthManager::ACTION_REMOVE:
-                return [];
+		switch ( $this->action ) {
+			case AuthManager::ACTION_REMOVE:
+				return [];
 
-            case AuthManager::ACTION_LINK:
-            case AuthManager::ACTION_CREATE:
-            case AuthManager::ACTION_LOGIN:
-                if (count($domains) == 1 && !$required && isset($ret['username'])) {
-                    $ret['domain'] = [
-                        'type' => 'hidden',
-                        'value' => $domains[0],
-                    ];
-                }
+			case AuthManager::ACTION_LINK:
+			case AuthManager::ACTION_CREATE:
+			case AuthManager::ACTION_LOGIN:
+				if ( count( $domains ) == 1 && !$required && isset( $ret['username'] ) ) {
+					$ret['domain'] = [
+						'type' => 'hidden',
+						'value' => $domains[0],
+					];
+				}
 
-                break;
+				break;
+		}
 
-        }
-
-        return $ret;
-    }
+		return $ret;
+	}
 }

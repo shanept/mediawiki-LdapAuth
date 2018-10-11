@@ -13,235 +13,275 @@ use Psr\Log\LoggerInterface;
 /**
  * Heavily based upon extension:LdapGroups
  **/
-class LdapGroupSync
-{
-    protected $logger;
-    protected $config;
-    protected $ldap;
+class LdapGroupSync {
+	/**
+	 * The Logger object
+	 *
+	 * @var Psr\Log\LoggerInterface
+	 */
+	protected $logger;
 
-    public function __construct(User $user, $ldap)
-    {
-        $this->user = $user;
-        $this->ldap = $ldap;
-    }
+	/**
+	 * The config object
+	 *
+	 * @var \Config
+	 */
+	protected $config;
 
-    public function setLogger(LoggerInterface $logger)
-    {
-        $this->logger = $logger;
-    }
+	/**
+	 * The LDAP object
+	 *
+	 * @var Symfony\Component\Ldap\Ldap
+	 */
+	protected $ldap;
 
-    public function setConfig(Config $config)
-    {
-        $this->config = $config;
-    }
+	/**
+	 * @param \User $user
+	 * @param Symfony\Component\Ldap\Ldap $ldap
+	 */
+	public function __construct( User $user, $ldap ) {
+		$this->user = $user;
+		$this->ldap = $ldap;
+	}
 
-    public function map()
-    {
-        $this->populateGroups();
-        $data = $this->fetchData();
-        $this->mapGroups($data);
-    }
+	/**
+	 * Sets the Logger for this class
+	 *
+	 * @param Psr\Logger\LoggerInterface $logger
+	 */
+	public function setLogger( LoggerInterface $logger ) {
+		$this->logger = $logger;
+	}
 
-    protected function populateGroups()
-    {
-        $domain = $this->user->getOption('domain');
-        $map = $this->config->get('MapGroups')[$domain];
+	/**
+	 * Sets the Config for this class
+	 *
+	 * @param \Config $config
+	 */
+	public function setConfig( Config $config ) {
+		$this->config = $config;
+	}
 
-        foreach ($map as $group => $DNs) {
-            $DNs = array_map('strtolower', $DNs);
-            foreach ($DNs as $DN) {
-                $this->groupMap[$group][] = $DN;
-                $this->ldapGroupMap[$DN] = $group;
-            }
-        }
+	public function map() {
+		$this->populateGroups();
+		$data = $this->fetchData();
+		$this->mapGroups( $data );
+	}
 
-        $this->setRestrictions($map);
-    }
+	protected function populateGroups() {
+		$domain = $this->user->getOption( 'domain' );
+		$map = $this->config->get( 'MapGroups' )[$domain];
 
-    /**
-     * Restrict what can be done with these groups on Special:UserRights
-     *
-     * @param array $groupMap  The group map
-     */
-    protected function setRestrictions(array $map)
-    {
-        global $wgGroupPermissions, $wgAddGroups, $wgRemoveGroups;
+		foreach ( $map as $group => $DNs ) {
+			$DNs = array_map( 'strtolower', $DNs );
 
-        // Setup all new groups as 'user'. This allows new groups to be
-        // created for linking the AD groups to.
-        foreach ($map as $group=>$DNs) {
-            if (!isset($wgGroupPermissions[$group])) {
-                $wgGroupPermissions[$group] = $wgGroupPermissions['user'];
-            }
-        }
+			foreach ( $DNs as $DN ) {
+				$this->groupMap[$group][] = $DN;
+				$this->ldapGroupMap[$DN] = $group;
+			}
+		}
 
-        $LdapGroups = array_keys($map);
-        $WikiGroups = array_diff(array_keys($wgGroupPermissions), $LdapGroups);
+		$this->setRestrictions( $map );
+	}
 
-        // Restrict the ability of users to change these rights
-        foreach (array_unique(array_keys($wgGroupPermissions)) as $group) {
-            if (!isset($wgGroupPermissions[$group]['userrights'])) {
-                continue;
-            }
+	/**
+	 * Restrict what can be done with these groups on Special:UserRights
+	 *
+	 * @param array $map The group map
+	 */
+	protected function setRestrictions( array $map ) {
+		global $wgGroupPermissions, $wgAddGroups, $wgRemoveGroups;
 
-            if (!$wgGroupPermissions[$group]['userrights']) {
-                continue;
-            }
+		// Setup all new groups as 'user'. This allows new groups to be
+		// created for linking the AD groups to.
+		foreach ( $map as $group => $DNs ) {
+			if ( !isset( $wgGroupPermissions[$group] ) ) {
+				$wgGroupPermissions[$group] = $wgGroupPermissions['user'];
+			}
+		}
 
-            $wgGroupPermissions[$group]['userrights'] = false;
+		$LdapGroups = array_keys( $map );
+		$WikiGroups = array_diff( array_keys( $wgGroupPermissions ), $LdapGroups );
 
-            if (!isset($wgAddGroups[$group])) {
-                $wgAddGroups[$group] = $WikiGroups;
-            }
+		// Restrict the ability of users to change these rights
+		foreach ( array_unique( array_keys( $wgGroupPermissions ) ) as $group ) {
+			if ( !isset( $wgGroupPermissions[$group]['userrights'] ) ) {
+				continue;
+			}
 
-            if (!isset($wgRemoveGroups[$group])) {
-                $wgRemoveGroups[$group] = $WikiGroups;
-            }
-        }
-    }
+			if ( !$wgGroupPermissions[$group]['userrights'] ) {
+				continue;
+			}
 
-    protected function fetchData()
-    {
-        $email = $this->user->getEmail();
+			$wgGroupPermissions[$group]['userrights'] = false;
 
-        if (!$email) {
-            $msgkey = 'noemail';
-            $params = ['user' => "$this->user"];
+			if ( !isset( $wgAddGroups[$group] ) ) {
+				$wgAddGroups[$group] = $WikiGroups;
+			}
 
-            $message = new Message($msgkey, $params);
-            $this->logger->warning($message->text());
+			if ( !isset( $wgRemoveGroups[$group] ) ) {
+				$wgRemoveGroups[$group] = $WikiGroups;
+			}
+		}
+	}
 
-            throw new MappingException("No email found for \"$this->user\".", $msgkey, $params);
-        }
+	protected function fetchData() {
+		$email = $this->user->getEmail();
 
-        $domain = $this->user->getOption('domain');
+		if ( !$email ) {
+			$msgkey = 'noemail';
+			$params = [ 'user' => "$this->user" ];
 
-        if (!$domain) {
-            $msgkey = 'ldapauth-nodomain';
-            $params = ['user' => "$this->user"];
+			$message = new Message( $msgkey, $params );
+			$this->logger->warning( $message->text() );
 
-            $message = new Message($msgkey, $params);
-            $this->logger->warning($message->text());
+			throw new MappingException( "No email found for \"{$this->user}\".", $msgkey, $params );
+		}
 
-            throw new MappingException("No domain found for \"$this->user\".", $msgkey, $params);
-        }
+		$domain = $this->user->getOption( 'domain' );
 
-        $isActiveDirectory = $this->config->get('IsActiveDirectory')[$domain];
+		if ( !$domain ) {
+			$msgkey = 'ldapauth-nodomain';
+			$params = [ 'user' => "$this->user" ];
 
-        $msgkey = 'ldapauth-fetch-data';
-        $params = ['user' => "$this->user"];
+			$message = new Message( $msgkey, $params );
+			$this->logger->warning( $message->text() );
 
-        $message = new Message($msgkey, $params);
-        $this->logger->info($message->text());
+			throw new MappingException( "No domain found for \"{$this->user}\".", $msgkey, $params );
+		}
 
-        $entry = $this->doSearch("mail={$email}");
+		$isActiveDirectory = $this->config->get( 'IsActiveDirectory' )[$domain];
 
-        if (!$entry) {
-            $msgkey = 'ldapauth-no-user-by-email';
-            $params = ['email' => $email];
+		$msgkey = 'ldapauth-fetch-data';
+		$params = [ 'user' => "$this->user" ];
 
-            $message = new Message($msgkey, $params);
-            $this->logger->warning($message->text());
+		$message = new Message( $msgkey, $params );
+		$this->logger->info( $message->text() );
 
-            throw new MappingException("No user found by email \"$email\".", $msgkey, $params);
-        }
+		$entry = $this->doSearch( "mail={$email}" );
 
-        $data = $entry[0];
+		if ( !$entry ) {
+			$msgkey = 'ldapauth-no-user-by-email';
+			$params = [ 'email' => $email ];
 
-        if ($isActiveDirectory) {
-            $data = $this->doGroupMapUsingChain($data);
-        }
+			$message = new Message( $msgkey, $params );
+			$this->logger->warning( $message->text() );
 
-        return $data;
-    }
+			throw new MappingException( "No user found by email \"{$email}\".", $msgkey, $params );
+		}
 
-    protected function doSearch($match)
-    {
-        $domain = $this->user->getOption('domain');
-        $base = $this->config->get('BaseDN')[$domain];
-        $search_tree = $this->config->get('SearchTree')[$domain];
-        $refresh_sync = $this->config->get('CacheGroupMap')[$domain];
+		$data = $entry[0];
 
-        $runtime = -microtime(true);
-        $key = wfMemcKey('ldapauth-groups', $match);
-        $cache = wfGetMainCache();
-        $entry = $cache->get($key);
+		if ( $isActiveDirectory ) {
+			$data = $this->doGroupMapUsingChain( $data );
+		}
 
-        if ($entry === false) {
-            $ldap_query_options = [
-                'scope' => $search_tree ? QueryInterface::SCOPE_SUB : QueryInterface::SCOPE_ONE,
-                'filter' => [
-                    '*',
-                ],
-            ];
+		return $data;
+	}
 
-            $query = $this->ldap->query($base, $match, $ldap_query_options);
-            $entry = $query->execute()->toArray();
+	/**
+	 * Performs an LDAP query against the query parameters in $match
+	 *
+	 * @param string $match The query parameters for which to search
+	 *
+	 * @return Symfony\Component\Ldap\Entry The first entry in the result list
+	 */
+	protected function doSearch( $match ) {
+		$domain = $this->user->getOption( 'domain' );
+		$base = $this->config->get( 'BaseDN' )[$domain];
+		$search_tree = $this->config->get( 'SearchTree' )[$domain];
+		$refresh_sync = $this->config->get( 'CacheGroupMap' )[$domain];
 
-            $cache->set($key, $entry, $refresh_sync);
-        }
+		$runtime = -microtime( true );
+		$key = wfMemcKey( 'ldapauth-groups', $match );
+		$cache = wfGetMainCache();
+		$entry = $cache->get( $key );
 
-        $runtime += microtime(true);
-        $msgkey = 'ldapauth-ran-search';
-        $params = ['search' => $match, 'runtime' => $runtime];
+		if ( $entry === false ) {
+			$ldap_query_options = [
+				'scope' => $search_tree ? QueryInterface::SCOPE_SUB : QueryInterface::SCOPE_ONE,
+				'filter' => [
+					'*',
+				],
+			];
 
-        $message = new Message($msgkey, $params);
-        $this->logger->debug($message->text());
+			$query = $this->ldap->query( $base, $match, $ldap_query_options );
+			$entry = $query->execute()->toArray();
 
-        return $entry;
-    }
+			$cache->set( $key, $entry, $refresh_sync );
+		}
 
-    protected function mapGroups($data)
-    {
-        $user_groups = $this->user->getGroups();
+		$runtime += microtime( true );
+		$msgkey = 'ldapauth-ran-search';
+		$params = [ 'search' => $match, 'runtime' => $runtime ];
 
-        // Create a list of LDAP groups this person is a member of
-        $memberOf = array_map('strtolower', $data->getAttribute('memberOf'));
-        $memberOf = array_flip($memberOf);
+		$message = new Message( $msgkey, $params );
+		$this->logger->debug( $message->text() );
 
-        $this->logger->debug(sprintf('memberOf: "%s"', implode('", "', $memberOf)));
-        $this->logger->debug(sprintf('In groups: "%s"', implode('", ', $user_groups)));
+		return $entry;
+	}
 
-        // List of LDAP groups that map to MediaWiki groups that we already have
-        $existing = array_intersect($this->ldapGroupMap, $user_groups);
+	/**
+	 * Determines which LDAP groups should be mapped to which MediaWiki groups
+	 * and adds the user to the associated MediaWiki group
+	 *
+	 * @param Symfony\Component\Ldap\Entry $data LDAP query results for user
+	 */
+	protected function mapGroups( $data ) {
+		$user_groups = $this->user->getGroups();
 
-        // List of LDAP groups that map to MediaWiki groups we do NOT already have
-        $missing = array_diff($this->ldapGroupMap, $user_groups);
+		// Create a list of LDAP groups this person is a member of
+		$memberOf = array_map( 'strtolower', $data->getAttribute( 'memberOf' ) );
+		$memberOf = array_flip( $memberOf );
 
-        // LDAP-mapped MediaWiki groups that should be added because they
-        //  aren't in the user's list
-        $add = array_keys(array_flip(array_intersect_key($missing, $memberOf)));
+		$this->logger->debug( sprintf( 'memberOf: "%s"', implode( '", "', $memberOf ) ) );
+		$this->logger->debug( sprintf( 'In groups: "%s"', implode( '", ', $user_groups ) ) );
 
-        // MediaWiki groups that should be removed - user doesn't have any LDAP groups
-        foreach (array_keys($this->groupMap) as $group) {
-            $matched = array_intersect($this->groupMap[$group], array_flip($memberOf));
+		// List of LDAP groups that map to MediaWiki groups that we already have
+		$existing = array_intersect( $this->ldapGroupMap, $user_groups );
 
-            if (count($matched) === 0) {
-                $msgkey = 'ldapauth-delete-from-group';
-                $params = ['user' => "{$this->user}", 'group' => $group];
+		// List of LDAP groups that map to MediaWiki groups we do NOT already have
+		$missing = array_diff( $this->ldapGroupMap, $user_groups );
 
-                $message = new Message($msgkey, $params);
-                $this->logger->debug($message->text());
+		// LDAP-mapped MediaWiki groups that should be added because they
+		// aren't in the user's list
+		$add = array_keys( array_flip( array_intersect_key( $missing, $memberOf ) ) );
 
-                $this->user->removeGroup($group);
-            }
-        }
+		// MediaWiki groups that should be removed - user doesn't have any LDAP groups
+		foreach ( array_keys( $this->groupMap ) as $group ) {
+			$matched = array_intersect( $this->groupMap[$group], array_flip( $memberOf ) );
 
-        foreach ($add as $group) {
-            $msgkey = 'ldapauth-add-to-group';
-            $params = ['user' => "{$this->user}", 'group' => $group];
+			if ( count( $matched ) === 0 ) {
+				$msgkey = 'ldapauth-delete-from-group';
+				$params = [ 'user' => "{$this->user}", 'group' => $group ];
 
-            $message = new Message($msgkey, $params);
-            $this->logger->debug($message->text());
+				$message = new Message( $msgkey, $params );
+				$this->logger->debug( $message->text() );
 
-            $this->user->addGroup($group);
-        }
+				$this->user->removeGroup( $group );
+			}
+		}
 
-        $this->user->saveSettings();
-    }
+		foreach ( $add as $group ) {
+			$msgkey = 'ldapauth-add-to-group';
+			$params = [ 'user' => "{$this->user}", 'group' => $group ];
 
-    protected function doGroupMapUsingChain($data)
-    {
-        throw new \BadMethodCallException('Not yet implemented.');
-    }
+			$message = new Message( $msgkey, $params );
+			$this->logger->debug( $message->text() );
+
+			$this->user->addGroup( $group );
+		}
+
+		$this->user->saveSettings();
+	}
+
+	/**
+	 * Set up a group map for the user using chained groups.
+	 * See http://ldapwiki.com/wiki/1.2.840.113556.1.4.1941
+	 *
+	 * @param array $data Ldap query results for the user
+	 */
+	protected function doGroupMapUsingChain( $data ) {
+		throw new \BadMethodCallException( 'Not yet implemented.' );
+	}
 }

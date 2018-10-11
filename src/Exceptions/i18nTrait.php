@@ -3,32 +3,53 @@
 namespace Shanept\LdapAuth\Exceptions;
 
 use Throwable;
-use RuntimeException;
 
-trait i18nTrait
-{
-    protected $key;
-    protected $params;
+trait i18nTrait {
+	/**
+	 * The localization message key
+	 *
+	 * @var string
+	 */
+	protected $key;
 
-    public function __construct(
-        string $message = '',
-        string $key = '',
-        array $params = [],
-        int $code = 0,
-        Throwable $previous = null
-    ) {
-        parent::__construct($message, $code, $previous);
-        $this->key = $key;
-        $this->params = $params;
-    }
+	/**
+	 * Parameters to be passed into the localized message
+	 *
+	 * @var array
+	 */
+	protected $params;
 
-    public function getTranslationKey()
-    {
-        return $this->key;
-    }
+	/**
+	 * @param string $message Non-localized exception message
+	 * @param string $key The localization message key
+	 * @param array $params Parameters to be passed into the localized message
+	 * @param int $code The exception code
+	 * @param Throwable|null $previous
+	 */
+	public function __construct(
+		$message = '',
+		$key = '',
+		array $params = [],
+		$code = 0,
+		Throwable $previous = null
+	) {
+		parent::__construct( $message, $code, $previous );
 
-    public function getTranslationParams()
-    {
-        return $this->params;
-    }
+		$this->key = $key;
+		$this->params = $params;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function getTranslationKey() {
+		return $this->key;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function getTranslationParams() {
+		return $this->params;
+	}
 }

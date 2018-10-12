@@ -142,7 +142,7 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
 			$message = $e->getTranslationKey();
 			$params = $e->getTranslationParams();
 		} catch ( SymException $e ) {
-			$message = new RawMessage( '$1', $e->getMessage() );
+			$message = new RawMessage( $e->getMessage() );
 		}
 
 		if ( !is_a( $message, Message::class ) ) {

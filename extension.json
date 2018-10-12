@@ -28,8 +28,7 @@
         "Shanept\\LdapAuth\\": "src/"
     },
     "Hooks": {
-        "AuthPluginSetup": "Shanept\\LdapAuth\\Hooks\\Config::go",
-        "LoadExtensionSchemaUpdates": "Shanept\\LdapAuth\\Hooks\\LoadExtensionSchemaUpdates::go"
+        "AuthPluginSetup": "Shanept\\LdapAuth\\Hooks\\Config::go"
     },
     "config_prefix": "wgLdapAuth",
     "config": {

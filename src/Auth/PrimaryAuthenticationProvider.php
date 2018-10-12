@@ -14,7 +14,6 @@ use Config;
 use Message;
 use RawMessage;
 use StatusValue;
-use MediaWiki\Auth\AuthManager;
 use MediaWiki\MediaWikiServices;
 use MediaWiki\Auth\AuthenticationRequest;
 use MediaWiki\Auth\AuthenticationResponse;
@@ -268,25 +267,7 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
 	 * @return bool Whether or not the database was updated correctly
 	 */
 	public function providerChangeAuthenticationData( AuthenticationRequest $req ) {
-		if ( !is_a( $req, LdapAuthenticationRequest::class ) ) {
-			return false;
-		}
-
-		if ( $req->action !== AuthManager::ACTION_REMOVE ) {
-			throw new \BadMethodCallException( 'Authentication Data Change not supported.' );
-		}
-
-		$db = wfGetDB( DB_MASTER );
-
-		$user = User::newFromName( $req->username );
-
-		return (bool)$db->delete(
-			'user_ldapauth_domain',
-			[
-				'user_id' => $user->getId()
-			],
-			__METHOD__
-		);
+		return false;
 	}
 
 	/**
@@ -374,19 +355,10 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
 	 */
 	public function autoCreatedAccount( $user, $source ) {
 		$domain = $this->manager->getAuthenticationSessionData( 'LdapAuthDomain' );
+
 		$user->setOption( 'domain', $domain );
 		$user->confirmEmail();
 		$user->saveSettings();
-
-		$db = wfGetDB( DB_MASTER );
-
-		$db->insert(
-			'user_ldapauth_domain',
-			[
-				'user_id' => $user->getId(),
-				'user_domain' => $domain
-			]
-		);
 	}
 
 	private function connect( LdapAuthenticationRequest $req ) {

@@ -171,6 +171,10 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
 	 *   (PASS or FAIL)
 	 */
 	public function postAuthentication( $user, AuthenticationResponse $response ) {
+		if ( $response->status != AuthenticationResponse::PASS ) {
+			return;
+		}
+
 		$user->setRealName( $this->manager->getAuthenticationSessionData( 'LdapAuthDisplayName' ) );
 		$user->setEmail( $this->manager->getAuthenticationSessionData( 'LdapAuthEmail' ) );
 		// Every time the email is set, it is invalidated. Don't invalidate it.

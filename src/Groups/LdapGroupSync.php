@@ -70,6 +70,17 @@ class LdapGroupSync {
 
 	protected function populateGroups() {
 		$domain = $this->user->getOption( 'domain' );
+
+		if ( null === $domain ) {
+			$msgkey = 'ldapauth-nodomain';
+			$params = [ 'user' => "$this->user" ];
+
+			$message = new Message( $msgkey, $params );
+			$this->logger->warning( $message->text() );
+
+			throw new MappingException( "No domain found for \"{$this->user}\".", $msgkey, $params );
+		}
+
 		$map = $this->config->get( 'MapGroups' )[$domain];
 
 		foreach ( $map as $group => $DNs ) {
@@ -140,7 +151,7 @@ class LdapGroupSync {
 
 		$domain = $this->user->getOption( 'domain' );
 
-		if ( !$domain ) {
+		if ( null === $domain ) {
 			$msgkey = 'ldapauth-nodomain';
 			$params = [ 'user' => "$this->user" ];
 

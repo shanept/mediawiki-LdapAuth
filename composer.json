@@ -15,7 +15,7 @@
     "require-dev": {
         "jakub-onderka/php-parallel-lint": "^1.0",
         "mediawiki/mediawiki-codesniffer": "^22.0",
-        "etsy/phan": "^1.1"
+        "phan/phan": "^1.1"
     },
     "scripts": {
         "test": [

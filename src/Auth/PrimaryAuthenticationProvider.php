@@ -269,7 +269,7 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
 	 */
 	public function providerChangeAuthenticationData( AuthenticationRequest $req ) {
 		if ( !is_a( $req, LdapAuthenticationRequest::class ) ) {
-			return;
+			return false;
 		}
 
 		if ( $req->action !== AuthManager::ACTION_REMOVE ) {
@@ -354,7 +354,7 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
 			$req->domain = $domain;
 
 			$ldap = $this->connect( $req );
-			$results = $this->search( $ldap, $req )->toArray();
+			$results = $this->search( $req )->toArray();
 
 			if ( count( $results ) > 0 ) {
 				return StatusValue::newGood();

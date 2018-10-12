@@ -14,7 +14,7 @@ class LoadExtensionSchemaUpdates {
 	 */
 	public static function go( DatabaseUpdater $updater ) {
 		$schema = __DIR__ . '/../sql/user_ldapauth_domain.sql';
-		$updater->addExtensionTable( 'user_ldapauth_domain', $schema, true );
+		$updater->addExtensionTable( 'user_ldapauth_domain', $schema );
 
 		return true;
 	}

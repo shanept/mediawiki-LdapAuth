@@ -2,6 +2,7 @@
 
 namespace Shanept\LdapAuth\Hooks;
 
+use RuntimeException;
 use Shanept\LdapAuth\Exceptions\ConfigException;
 
 use GlobalVarConfig;
@@ -29,6 +30,13 @@ class Config {
 	 * @var array
 	 */
 	protected $options;
+
+	/**
+	 * JSON decoded array of extension.json
+	 *
+	 * @var array
+	 */
+	protected $extension;
 
 	public static function makeConfig() {
 		$inst = new self;
@@ -64,7 +72,7 @@ class Config {
 		$contents = file_get_contents( __DIR__ . '/../../extension.json' );
 
 		if ( false === $contents ) {
-			throw RuntimeException( 'LdapAuth could not open extension.json' );
+			throw new RuntimeException( 'LdapAuth could not open extension.json' );
 		}
 
 		$this->extension = json_decode( $contents, true );

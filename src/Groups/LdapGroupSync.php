@@ -17,7 +17,7 @@ class LdapGroupSync {
 	/**
 	 * The Logger object
 	 *
-	 * @var Psr\Log\LoggerInterface
+	 * @var \Psr\Log\LoggerInterface
 	 */
 	protected $logger;
 
@@ -31,13 +31,40 @@ class LdapGroupSync {
 	/**
 	 * The LDAP object
 	 *
-	 * @var Symfony\Component\Ldap\Ldap
+	 * @var \Symfony\Component\Ldap\Ldap
 	 */
 	protected $ldap;
 
 	/**
+	 * The User object referencing the currently logged in user
+	 *
+	 * @var \User
+	 */
+	protected $user;
+
+	/**
+	 * Mapping of MediaWiki groups
+	 *
+	 * Key: MediaWiki group name
+	 * Val: LDAP DN
+	 *
+	 * @var array
+	 */
+	protected $groupMap;
+
+	/**
+	 * List of LDAP groups.
+	 *
+	 * Key: LDAP DN
+	 * Val: MediaWiki group name
+	 *
+	 * @var array
+	 */
+	protected $ldapGroupMap;
+
+	/**
 	 * @param \User $user
-	 * @param Symfony\Component\Ldap\Ldap $ldap
+	 * @param \Symfony\Component\Ldap\Ldap $ldap
 	 */
 	public function __construct( User $user, $ldap ) {
 		$this->user = $user;
@@ -47,7 +74,7 @@ class LdapGroupSync {
 	/**
 	 * Sets the Logger for this class
 	 *
-	 * @param Psr\Logger\LoggerInterface $logger
+	 * @param \Psr\Log\LoggerInterface $logger
 	 */
 	public function setLogger( LoggerInterface $logger ) {
 		$this->logger = $logger;
@@ -195,7 +222,7 @@ class LdapGroupSync {
 	 *
 	 * @param string $match The query parameters for which to search
 	 *
-	 * @return Symfony\Component\Ldap\Entry The first entry in the result list
+	 * @return \Symfony\Component\Ldap\Entry[] An array of search results
 	 */
 	protected function doSearch( $match ) {
 		$domain = $this->user->getOption( 'domain' );
@@ -204,8 +231,9 @@ class LdapGroupSync {
 		$refresh_sync = $this->config->get( 'CacheGroupMap' )[$domain];
 
 		$runtime = -microtime( true );
-		$key = wfMemcKey( 'ldapauth-groups', $match );
+
 		$cache = wfGetMainCache();
+		$key = $cache->makeKey( 'ldapauth-groups', $match );
 		$entry = $cache->get( $key );
 
 		if ( $entry === false ) {
@@ -236,7 +264,7 @@ class LdapGroupSync {
 	 * Determines which LDAP groups should be mapped to which MediaWiki groups
 	 * and adds the user to the associated MediaWiki group
 	 *
-	 * @param Symfony\Component\Ldap\Entry $data LDAP query results for user
+	 * @param \Symfony\Component\Ldap\Entry $data LDAP query results for user
 	 */
 	protected function mapGroups( $data ) {
 		$user_groups = $this->user->getGroups();
@@ -290,7 +318,7 @@ class LdapGroupSync {
 	 * Set up a group map for the user using chained groups.
 	 * See http://ldapwiki.com/wiki/1.2.840.113556.1.4.1941
 	 *
-	 * @param array $data Ldap query results for the user
+	 * @param \Symfony\Component\Ldap\Entry $data Ldap query results for user
 	 */
 	protected function doGroupMapUsingChain( $data ) {
 		throw new \BadMethodCallException( 'Not yet implemented.' );

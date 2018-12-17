@@ -1,7 +1,10 @@
 {
     "name": "LdapAuth",
     "version": "0.0.5",
-    "author": "Shane Thompson <me@shane.pt>",
+    "author": [
+      "Shane Thompson <me@shane.pt>",
+      "Leonid Verhovskij <l.verhovskij@gmail.com>"
+    ],
     "descriptionmsg": "ldapauth-desc",
     "license-name": "MIT",
     "type": "auth",
@@ -96,6 +99,21 @@
             "value": false,
             "description": "Are we connecting to an Active-Directory LDAP server?",
             "public": true
+        },
+        "IsOpenLDAP": {
+            "value": false,
+            "description": "Are we connecting to an OpenLDAP server?",
+            "public": true
+        },
+        "UsernameField": {
+          "value": "sAMAccountName",
+          "description": "Specifies the LDAP/AD Field containing the username.",
+          "public": true
+        },
+        "DisplayNameField": {
+          "value": "displayName",
+          "description": "Specifies the LDAP/AD Field containing the display name.",
+          "public": true
         }
     },
     "manifest_version": 2

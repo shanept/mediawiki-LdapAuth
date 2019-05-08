@@ -211,7 +211,10 @@ class LdapGroupSync {
 		$data = $entry[0];
 
 		if ( $isActiveDirectory ) {
-			$data = $this->doGroupMapUsingChain( $data );
+			/**
+			 * Ignore until actually implemented
+			 * 	$data = $this->doGroupMapUsingChain( $data );
+			 */
 		}
 
 		return $data;

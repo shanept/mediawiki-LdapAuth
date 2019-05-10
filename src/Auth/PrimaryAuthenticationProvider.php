@@ -175,6 +175,8 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
 		}
 
 		$user->setRealName( $this->manager->getAuthenticationSessionData( 'LdapAuthDisplayName' ) );
+		$domain = $this->manager->getAuthenticationSessionData( 'LdapAuthDomain' );
+		$user->setOption( 'domain', $domain );
 		$user->setEmail( $this->manager->getAuthenticationSessionData( 'LdapAuthEmail' ) );
 		// Every time the email is set, it is invalidated. Don't invalidate it.
 		$user->confirmEmail();

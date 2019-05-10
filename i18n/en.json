@@ -6,6 +6,7 @@
         "message-documentation": "qqq"
     },
     "ldapauth-service-name": "LDAP: $1",
+    "ldapauth-desc": "LDAP authentication provider plugin",
     "ldapauth-authenticate-user": "Attempting to authenticate user \"$1\" via LDAP.",
     "ldapauth-no-base": "No LDAP search base has been specified on domain \"$1\".",
     "ldapauth-attempt-bind": "Attempting to bind to LDAP resource \"$2://$1\".",
@@ -24,5 +25,5 @@
     "ldapauth-delete-from-group": "Removing user \"$1\" from group \"$2\".",
     "ldapauth-add-to-group": "Adding user \"$1\" to group \"$2\".",
     "ldapauth-ran-search": "Ran LDAP search for \"$1\" in \"$2\" seconds.",
-    "ldapauth-error-unknown": "An unknown error occured."
+    "ldapauth-error-unknown": "An unknown error occurred."
 }

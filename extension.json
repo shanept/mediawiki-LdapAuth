@@ -3,6 +3,7 @@
     "version": "0.0.5",
     "author": "Shane Thompson <me@shane.pt>",
     "descriptionmsg": "ldapauth-desc",
+    "url": "https://www.mediawiki.org/wiki/Extension:LdapAuth",
     "license-name": "MIT",
     "type": "auth",
     "requires": {

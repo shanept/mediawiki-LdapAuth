@@ -129,14 +129,14 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
 			$s = $search[0];
 			$setSession = [ $this->manager, 'setAuthenticationSessionData' ];
 
-			$setSession( 'LdapAuthUsername', $s->getAttribute( 'sAMAccountName' )[0] );
-			$setSession( 'LdapAuthDisplayName', $s->getAttribute( 'displayName' )[0] );
+			$setSession( 'LdapAuthUsername', $s->getAttribute( $this->config->get( 'UsernameField' )[$req->domain] )[0] );
+			$setSession( 'LdapAuthDisplayName', $s->getAttribute( $this->config->get( 'DisplayNameField' )[$req->domain] )[0] );
 			$setSession( 'LdapAuthFirstName', $s->getAttribute( 'givenName' )[0] );
 			$setSession( 'LdapAuthLastName', $s->getAttribute( 'sn' )[0] );
 			$setSession( 'LdapAuthEmail', $s->getAttribute( 'mail' )[0] );
 			$setSession( 'LdapAuthDomain', $req->domain );
 
-			return AuthenticationResponse::newPass( $s->getAttribute( 'sAMAccountName' )[0] );
+			return AuthenticationResponse::newPass( $s->getAttribute( $this->config->get( 'UsernameField' )[$req->domain] )[0] );
 		} catch ( I18nException $e ) {
 			$message = $e->getTranslationKey();
 			$params = $e->getTranslationParams();
@@ -182,12 +182,15 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
 		$user->confirmEmail();
 		$user->saveSettings();
 
-		// Map Groups
-		$sync = new LdapGroupSync( $user, $this->ldap );
-		$sync->setLogger( $this->logger );
-		$sync->setConfig( $this->config );
+		//TODO: Implement Group Mapping for OpenLDAP, disable until then
+		if( !$this->config->get('IsOpenLDAP') ){
+			// Map Groups
+			$sync = new LdapGroupSync( $user, $this->ldap );
+			$sync->setLogger( $this->logger );
+			$sync->setConfig( $this->config );
 
-		$sync->map();
+			$sync->map();
+		}
 	}
 
 	/**
@@ -443,7 +446,22 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
 		$encryption = $this->config->get( 'EncryptionType' )[$req->domain];
 
 		// We will go through and try every server until one succeeds
-		$username = "{$req->username}@{$req->domain}";
+		// Use different handling for OpenLDAP Serverm while users dn is needed
+		if( $this->config->get( 'IsOpenLDAP' )[$req->domain] ){
+			//First lookup dn/rdn for requested User
+			$search = $this->search( $req )->toArray();
+
+			// If we don't have results, we will just use an exception to
+			// jump to the end of the function.
+			if ( !count( $search ) ) {
+				throw new LdapConnectionException( '', 'no-user-by-username' );
+			}
+
+			$username = $search[0]->getDN();
+		} else {
+			$username = "{$req->username}@{$req->domain}";
+		}
+
 		$msg_bind_params = [
 			'server' => $this->server,
 			'enc' => ( $this->encryption === 'none' ) ? 'ldap' : $this->encryption,
@@ -493,7 +511,7 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
 		$ldap_query_options = [
 			'scope' => $search_tree ? QueryInterface::SCOPE_SUB : QueryInterface::SCOPE_ONE,
 			'filter' => [
-				'sAMAccountName',
+				$this->config->get( 'UsernameField' )[ $req->domain ],
 
 				// First Name:
 				'givenName',

@@ -22,6 +22,7 @@
     "ldapauth-bind-success": "Bound successfully.",
     "ldapauth-fetch-data": "Fetching user data for \"$1\" via LDAP.",
     "ldapauth-no-user-by-email": "There is no user with the email \"$1\".",
+    "ldapauth-no-user-by-username": "There is no user \"$1\".",
     "ldapauth-delete-from-group": "Removing user \"$1\" from group \"$2\".",
     "ldapauth-add-to-group": "Adding user \"$1\" to group \"$2\".",
     "ldapauth-ran-search": "Ran LDAP search for \"$1\" in \"$2\" seconds.",

@@ -251,6 +251,8 @@ class PrimaryAuthenticationProvider extends AbstractPrimaryAuthenticationProvide
 		AuthenticationRequest $req,
 		$checkData = true
 	) {
+		if($this->config->get( 'UseLocal' ))
+			return StatusValue::newGood( 'ignored' );
 		return StatusValue::newFatal( 'Authentication Data Change not supported.' );
 	}
 
